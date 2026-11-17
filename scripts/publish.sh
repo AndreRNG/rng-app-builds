@@ -4,7 +4,9 @@
 # www.rng.media/apps/manifest.json). Tags look like cutcat-b12 or studio-b7; "latest" = the
 # newest release of every app and the launcher; "about" alone only refreshes the apps' `about`
 # blocks (pitch, features, screenshots for the launcher's detail view) from about.json, which
-# scripts/gen-about.mjs builds from the rng.media app pages.
+# scripts/gen-about.mjs builds from the rng.media app pages. A bare app id with a file in extras/
+# (extras/<id>.json) adds or refreshes that hand-written entry: apps with their own installers and
+# hosting, which RNG Studio installs but never updates. Extras are only published when named.
 set -euo pipefail
 PRIV=AndreRNG/rng-app-builds  # public now; name kept
 PUB=AndreRNG/rng-studio
@@ -27,7 +29,7 @@ print("\n".join(seen.values()))')
 fi
 
 for tag in "${tags[@]}"; do
-  [ "$tag" = about ] && continue
+  [ "$tag" = about ] || [ -f "$here/extras/$tag.json" ] && continue
   id=${tag%-b*}
   d="$work/$tag"
   rm -rf "$d"; mkdir -p "$d"
@@ -83,7 +85,7 @@ done
 
 # Licences, notices and our change list for every published app (linked from the download page).
 for tag in "${tags[@]}"; do
-  [ "$tag" = about ] && continue
+  [ "$tag" = about ] || [ -f "$here/extras/$tag.json" ] && continue
   id=${tag%-b*}
   dst="$pubdir/licences/$id"; rm -rf "$dst"; mkdir -p "$dst"
   if [ "$id" = studio ]; then
@@ -95,10 +97,18 @@ for tag in "${tags[@]}"; do
   fi
 done
 
-python3 - "$here/about.json" "$pubdir/manifest.json" <<'PY'
-import json, sys
-about, man_path = json.load(open(sys.argv[1])), sys.argv[2]
+python3 - "$here/about.json" "$pubdir/manifest.json" "$here/apps.json" "$here/extras" "${tags[@]}" <<'PY'
+import json, os, sys
+about, man_path, apps_path, extras = json.load(open(sys.argv[1])), sys.argv[2], sys.argv[3], sys.argv[4]
 m = json.load(open(man_path))
+order = list(json.load(open(apps_path)))
+for t in sys.argv[5:]:
+    f = os.path.join(extras, f"{t}.json")
+    if os.path.exists(f):
+        e = json.load(open(f))
+        m["apps"] = [x for x in m["apps"] if x["id"] != e["id"]] + [e]
+        print("manifest:", e["id"], e["version"], "(extra)")
+m["apps"].sort(key=lambda x: order.index(x["id"]) if x["id"] in order else 99)
 for a in m["apps"]:
     if a["id"] in about:
         a["about"] = about[a["id"]]

@@ -37,6 +37,16 @@ pub struct Asset {
     /// Path of the program inside the archive (".app" bundle on macOS).
     #[serde(default)]
     pub exe: String,
+    /// Installer kind (apps that install and update themselves): the script in the archive to run.
+    #[serde(default, skip_serializing_if = "String::is_empty")]
+    pub installer: String,
+    /// Run `installer` in a terminal window (Linux).
+    #[serde(default, skip_serializing_if = "std::ops::Not::not")]
+    pub terminal: bool,
+    /// A file that exists once the app is installed (~, %APPDATA% and %LOCALAPPDATA% are expanded).
+    /// Apps with one are never tracked or updated by RNG Studio: they update themselves.
+    #[serde(default, skip_serializing_if = "String::is_empty")]
+    pub detect: String,
 }
 
 #[derive(Clone, Debug, Default, Serialize, Deserialize)]
@@ -54,6 +64,13 @@ pub struct Release {
     pub build: u64,
     #[serde(default)]
     pub platforms: BTreeMap<String, Asset>,
+    /// Like `platforms`, for apps that need this launcher's installer support. Launchers older than
+    /// that don't read it, so they list the app as "Coming soon" instead of installing it wrongly.
+    #[serde(default, skip_serializing_if = "BTreeMap::is_empty")]
+    pub installers: BTreeMap<String, Asset>,
+    /// Icon URL for apps without one built into the launcher.
+    #[serde(default, skip_serializing_if = "String::is_empty")]
+    pub icon: String,
     /// Copy for the app's detail view (newer manifests only).
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub about: Option<About>,
@@ -103,8 +120,33 @@ pub struct Screenshot {
 
 impl Release {
     pub fn asset(&self) -> Option<&Asset> {
-        platform_keys().iter().find_map(|k| self.platforms.get(*k))
+        platform_keys().iter().find_map(|k| self.platforms.get(*k).or_else(|| self.installers.get(*k)))
     }
+
+    /// For apps that update themselves: whether they're installed on this computer, found by their
+    /// `detect` file rather than RNG Studio's own records.
+    pub fn detected(&self) -> Option<Installed> {
+        let a = self.asset().filter(|a| !a.detect.is_empty())?;
+        let p = expand(&a.detect);
+        p.exists().then(|| Installed { version: String::new(), build: self.build, exe: p, dir: data_dir().join("apps").join(&self.id) })
+    }
+
+    pub fn self_updating(&self) -> bool {
+        self.asset().is_some_and(|a| !a.detect.is_empty())
+    }
+}
+
+/// `~/x`, `%APPDATA%\x`, `%LOCALAPPDATA%\x` → full paths.
+pub fn expand(p: &str) -> PathBuf {
+    if let Some(rest) = p.strip_prefix("~/") {
+        return dirs::home_dir().unwrap_or_default().join(rest);
+    }
+    for (var, dir) in [("%APPDATA%", dirs::data_dir()), ("%LOCALAPPDATA%", dirs::data_local_dir())] {
+        if let Some(rest) = p.strip_prefix(var) {
+            return dir.unwrap_or_default().join(rest.trim_start_matches(['\\', '/']));
+        }
+    }
+    PathBuf::from(p)
 }
 
 #[derive(Clone, Debug, Default, Serialize, Deserialize)]
@@ -340,7 +382,7 @@ pub fn install(app: &Release, progress: &dyn Fn(u64, u64)) -> Result<Installed> 
     let _ = fs::remove_dir_all(&dir);
     fs::rename(&staging, &dir).map_err(|e| e.to_string())?;
     #[cfg_attr(not(target_os = "macos"), allow(unused_mut))]
-    let mut exe = dir.join(&asset.exe);
+    let mut exe = dir.join(if asset.installer.is_empty() { &asset.exe } else { &asset.installer });
     if !exe.exists() {
         return Err(format!("{} is missing from the download", asset.exe));
     }
@@ -359,6 +401,15 @@ pub fn install(app: &Release, progress: &dyn Fn(u64, u64)) -> Result<Installed> 
         fs::rename(&exe, &target).map_err(|e| e.to_string())?;
         let _ = fs::remove_dir_all(&old);
         exe = target;
+    }
+
+    if !asset.installer.is_empty() {
+        run_installer(&dir, asset)?;
+        return Ok(Installed { version: app.version.clone(), build: app.build, exe, dir });
+    }
+    if !asset.detect.is_empty() {
+        // Installed by moving the .app (macOS); it updates itself from here on.
+        return Ok(Installed { version: app.version.clone(), build: app.build, exe, dir });
     }
 
     let installed = Installed { version: app.version.clone(), build: app.build, exe, dir: dir.clone() };
@@ -397,6 +448,69 @@ pub fn uninstall(app: &Release) -> Result<()> {
         shortcuts::remove(app);
     }
     save_state(&state)
+}
+
+/// Runs an app's own installer from its unpacked download and waits until its window closes.
+fn run_installer(dir: &Path, asset: &Asset) -> Result<()> {
+    let script = dir.join(&asset.installer);
+    let cwd = script.parent().unwrap_or(dir).to_path_buf();
+    #[cfg(unix)]
+    {
+        use std::os::unix::fs::PermissionsExt;
+        let _ = fs::set_permissions(&script, fs::Permissions::from_mode(0o755));
+    }
+    #[cfg(windows)]
+    let mut cmd = {
+        use std::os::windows::process::CommandExt;
+        let mut c = std::process::Command::new("cmd");
+        c.arg("/c").arg(&script).creation_flags(0x0000_0010); // CREATE_NEW_CONSOLE
+        c
+    };
+    #[cfg(not(windows))]
+    let mut cmd = if asset.terminal && cfg!(target_os = "linux") {
+        let sh = ["bash", "-c", "\"$0\"; echo; read -rp 'Press Enter to close this window. ' _"];
+        let found = [("konsole", &["--nofork", "-e"][..]), ("kitty", &[][..]), ("gnome-terminal", &["--wait", "--"][..]), ("xfce4-terminal", &["-x"][..]), ("alacritty", &["-e"][..]), ("foot", &[][..]), ("xterm", &["-e"][..])]
+            .into_iter()
+            .find(|(t, _)| std::process::Command::new("sh").arg("-c").arg(format!("command -v {t}")).stdout(std::process::Stdio::null()).status().is_ok_and(|s| s.success()));
+        let Some((term, args)) = found else {
+            open_folder(&cwd);
+            return Err(format!("no terminal found: run {} from the folder that just opened", asset.installer.rsplit('/').next().unwrap_or("the installer")));
+        };
+        let mut c = std::process::Command::new(term);
+        c.args(args).args(sh).arg(&script);
+        c
+    } else {
+        std::process::Command::new(&script)
+    };
+    cmd.current_dir(&cwd);
+    let status = cmd.status().map_err(|e| format!("couldn't start the installer: {e}"))?;
+    if !status.success() {
+        return Err("the installer stopped before finishing".into());
+    }
+    Ok(())
+}
+
+/// Opens an app that installed itself, through what its `detect` file points at.
+pub fn launch_detected(p: &Path) -> Result<()> {
+    let ext = p.extension().and_then(|e| e.to_str()).unwrap_or("");
+    if ext == "desktop" {
+        // Run the menu entry's Exec line (field codes like %U dropped).
+        let text = fs::read_to_string(p).map_err(|e| e.to_string())?;
+        let exec = text.lines().find_map(|l| l.strip_prefix("Exec=")).ok_or("its menu entry has no Exec line")?;
+        let exec: String = exec.split_whitespace().filter(|w| !(w.len() == 2 && w.starts_with('%'))).collect::<Vec<_>>().join(" ");
+        let mut cmd = std::process::Command::new("sh");
+        cmd.arg("-c").arg(&exec);
+        if let Some(home) = dirs::home_dir() {
+            cmd.current_dir(home);
+        }
+        cmd.stdin(std::process::Stdio::null()).stdout(std::process::Stdio::null()).stderr(std::process::Stdio::null());
+        return cmd.spawn().map(|_| ()).map_err(|e| format!("couldn't open it: {e}"));
+    }
+    if cfg!(windows) {
+        // A Start menu shortcut.
+        return std::process::Command::new("explorer").arg(p).spawn().map(|_| ()).map_err(|e| format!("couldn't open it: {e}"));
+    }
+    launch(p)
 }
 
 pub fn launch(exe: &Path) -> Result<()> {
@@ -612,5 +726,21 @@ fn write_own_shortcut(exe: &Path) {
                 let _ = s.create_lnk(l);
             }
         }
+    }
+}
+
+#[cfg(all(test, target_os = "linux"))]
+mod tests {
+    #[test]
+    fn opens_a_desktop_entry() {
+        let dir = std::env::temp_dir().join(format!("rng-studio-test-{}", std::process::id()));
+        std::fs::create_dir_all(&dir).unwrap();
+        let mark = dir.join("opened");
+        let entry = dir.join("x.desktop");
+        std::fs::write(&entry, format!("[Desktop Entry]\nExec=sh -c \"touch {}\" %U\n", mark.display())).unwrap();
+        super::launch_detected(&entry).unwrap();
+        std::thread::sleep(std::time::Duration::from_millis(500));
+        assert!(mark.exists());
+        let _ = std::fs::remove_dir_all(dir);
     }
 }

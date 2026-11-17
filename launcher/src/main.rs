@@ -159,12 +159,14 @@ impl App {
                 set(Some(Job::Busy { label: "Starting download…".into(), frac: Some(0.0) }));
                 let progress = |done: u64, total: u64| {
                     let frac = if total > 0 { done as f32 / total as f32 } else { 0.0 };
-                    let label = if frac >= 0.999 { "Installing…".into() } else { format!("Downloading {} of {}", mb(done), mb(total)) };
+                    let label = if frac >= 0.999 && app.self_updating() { "Finish the setup in the installer window…".into() } else if frac >= 0.999 { "Installing…".into() } else { format!("Downloading {} of {}", mb(done), mb(total)) };
                     set(Some(Job::Busy { label, frac: Some(frac) }));
                 };
                 match store::install(&app, &progress) {
                     Ok(installed) => {
-                        shared.lock().unwrap().state.apps.insert(app.id.clone(), installed);
+                        if !app.self_updating() {
+                            shared.lock().unwrap().state.apps.insert(app.id.clone(), installed);
+                        }
                         set(None);
                     }
                     Err(e) => set(Some(Job::Failed(e))),
@@ -302,6 +304,7 @@ fn glass_frame() -> egui::Frame {
 enum Action {
     Install(Release),
     Open(std::path::PathBuf),
+    OpenDetected(std::path::PathBuf),
     Uninstall(Release),
     ShowFiles(std::path::PathBuf),
     Dismiss(String),
@@ -319,9 +322,17 @@ impl eframe::App for App {
         };
         let mut actions = Vec::new();
         let apps: Vec<Release> = manifest.as_ref().map(|m| m.apps.clone()).unwrap_or_default();
+        // Apps that update themselves count as installed when their own install is found.
+        let mut state = state;
+        for a in apps.iter().filter(|a| a.self_updating()) {
+            match a.detected() {
+                Some(i) => state.apps.insert(a.id.clone(), i),
+                None => state.apps.remove(&a.id),
+            };
+        }
         let updatable: Vec<Release> = apps
             .iter()
-            .filter(|a| a.asset().is_some() && state.apps.get(&a.id).is_some_and(|i| i.build < a.build))
+            .filter(|a| a.asset().is_some() && !a.self_updating() && state.apps.get(&a.id).is_some_and(|i| i.build < a.build))
             .cloned()
             .collect();
 
@@ -477,6 +488,11 @@ impl eframe::App for App {
                         }
                     }
                 }
+                Action::OpenDetected(p) => {
+                    if let Err(e) = store::launch_detected(&p) {
+                        self.shared.lock().unwrap().note = Some(e);
+                    }
+                }
                 Action::ShowFiles(p) => store::open_folder(&p),
                 Action::Dismiss(id) => {
                     self.shared.lock().unwrap().jobs.remove(&id);
@@ -518,7 +534,14 @@ impl App {
     }
 
     fn app_icon(&mut self, ui: &mut egui::Ui, ctx: &egui::Context, app: &Release, size: f32) {
-        match self.icon(ctx, &app.id) {
+        let mut tex = self.icon(ctx, &app.id);
+        if tex.is_none() && !app.icon.is_empty() {
+            self.request_shot(ctx, &app.icon);
+            if let Some(Shot::Ready(t)) = self.shots.get(&app.icon) {
+                tex = Some(t.clone());
+            }
+        }
+        match tex {
             Some(t) => {
                 ui.add(egui::Image::new(&t).fit_to_exact_size(Vec2::splat(size)));
             }
@@ -607,13 +630,18 @@ impl App {
             ui.add_space(18.0);
             ui.separator();
             ui.add_space(6.0);
-            let credit = if about.credit.is_empty() { format!("{} is based on an open-source project by the ArtCraft team, licensed MIT OR Apache-2.0, and modified by RNG Media S.L.", app.name) } else { about.credit.clone() };
-            ui.label(RichText::new(credit).color(DIM).size(12.5));
+            // Without an `about` block, the five ArtCraft-based apps still get their credit.
+            let credit = if about.credit.is_empty() && !app.self_updating() { format!("{} is based on an open-source project by the ArtCraft team, licensed MIT OR Apache-2.0, and modified by RNG Media S.L.", app.name) } else { about.credit.clone() };
+            if !credit.is_empty() {
+                ui.label(RichText::new(credit).color(DIM).size(12.5));
+            }
             ui.horizontal(|ui| {
                 let page = if about.page.is_empty() { "https://www.rng.media/studio".to_string() } else { about.page.clone() };
                 let licences = if about.licences.is_empty() { "https://github.com/AndreRNG/rng-studio/tree/main/licences".to_string() } else { about.licences.clone() };
-                ui.hyperlink_to(RichText::new("Licences and notices").small(), licences);
-                ui.label(RichText::new("·").color(DIM).small());
+                if !about.licences.is_empty() || !app.self_updating() {
+                    ui.hyperlink_to(RichText::new("Licences and notices").small(), licences);
+                    ui.label(RichText::new("·").color(DIM).small());
+                }
                 ui.hyperlink_to(RichText::new(format!("{} on rng.media", app.name)).small(), page);
             });
             ui.add_space(8.0);
@@ -729,6 +757,9 @@ fn version_line(ui: &mut egui::Ui, app: &Release, inst: Option<&Installed>) {
                 ui.label(RichText::new(format!("v{}", i.version)).color(GOLD).monospace());
                 ui.label(RichText::new(format!("→ v{} available", app.version)).color(DIM).small());
             }
+            Some(i) if i.version.is_empty() => {
+                ui.label(RichText::new("installed · updates itself").color(GOLD).small());
+            }
             Some(i) => {
                 ui.label(RichText::new(format!("v{}", i.version)).color(GOLD).monospace());
                 ui.label(RichText::new("installed").color(DIM).small());
@@ -740,7 +771,7 @@ fn version_line(ui: &mut egui::Ui, app: &Release, inst: Option<&Installed>) {
     });
 }
 
-/// Install / Update / Open (and the ⋯ menu), or the progress bar while a job runs.
+/// Install / Update / Open (and the ••• menu), or the progress bar while a job runs.
 fn app_buttons(ui: &mut egui::Ui, app: &Release, inst: Option<&Installed>, job: Option<&Job>, queue_busy: bool, actions: &mut Vec<Action>) {
     match job {
         Some(Job::Busy { label, frac }) => {
@@ -759,6 +790,17 @@ fn app_buttons(ui: &mut egui::Ui, app: &Release, inst: Option<&Installed>, job: 
                             actions.push(Action::Install(app.clone()));
                         }
                     }
+                    Some(i) if app.self_updating() => {
+                        if accent_button(ui, "Open").clicked() {
+                            actions.push(Action::OpenDetected(i.exe.clone()));
+                        }
+                        ui.menu_button(RichText::new("•••").strong(), |ui| {
+                            if ui.button("Run the installer again").clicked() && !queue_busy {
+                                actions.push(Action::Install(app.clone()));
+                                ui.close();
+                            }
+                        });
+                    }
                     Some(i) => {
                         if can && i.build < app.build {
                             if accent_button(ui, "Update").clicked() && !queue_busy {
@@ -770,7 +812,7 @@ fn app_buttons(ui: &mut egui::Ui, app: &Release, inst: Option<&Installed>, job: 
                         } else if accent_button(ui, "Open").clicked() {
                             actions.push(Action::Open(i.exe.clone()));
                         }
-                        ui.menu_button(RichText::new("⋯").strong(), |ui| {
+                        ui.menu_button(RichText::new("•••").strong(), |ui| {
                             if ui.button("Show files").clicked() {
                                 actions.push(Action::ShowFiles(i.dir.clone()));
                                 ui.close();
@@ -811,7 +853,12 @@ fn cli(args: &[String]) -> Option<i32> {
     if let Some(n) = note {
         eprintln!("{n}");
     }
-    let state = store::load_state();
+    let mut state = store::load_state();
+    for a in m.apps.iter().filter(|a| a.self_updating()) {
+        if let Some(i) = a.detected() {
+            state.apps.insert(a.id.clone(), i);
+        }
+    }
     match args.first().map(String::as_str) {
         Some("--list") => {
             for a in &m.apps {
