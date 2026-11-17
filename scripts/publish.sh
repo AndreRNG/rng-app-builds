@@ -4,7 +4,7 @@
 # www.rng.media/apps/manifest.json). Tags look like cutcat-b12 or launchllama-b7; "latest" = the
 # newest release of every app and the launcher.
 set -euo pipefail
-PRIV=AndreRNG/rng-app-builds
+PRIV=AndreRNG/rng-app-builds  # public now; name kept
 PUB=AndreRNG/launchllama
 here=$(cd "$(dirname "$0")/.." && pwd)
 work=~/RNG/work/launchllama-publish
@@ -55,7 +55,7 @@ PY
   if gh release view "$tag" -R "$PUB" >/dev/null 2>&1; then
     gh release upload "$tag" -R "$PUB" --clobber $files
   else
-    title=$(python3 -c 'import json,sys;m=json.load(open(sys.argv[1]));print(f"{m[\"name\"]} {m[\"version\"]} (build {m[\"build\"]})")' "$d/$id.json")
+    title=$(python3 -c 'import json,sys;m=json.load(open(sys.argv[1]));print(m["name"], m["version"], "(build %s)" % m["build"])' "$d/$id.json")
     gh release create "$tag" -R "$PUB" --title "$title" --latest=$latest \
       --notes "Install and update with LaunchLlama: https://www.rng.media/launchllama" $files
   fi
