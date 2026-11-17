@@ -582,7 +582,8 @@ impl App {
                 for row in about.features.chunks(cols) {
                     ui.columns(cols, |columns| {
                         for (col, f) in columns.iter_mut().zip(row) {
-                            glass_frame().inner_margin(Margin::same(14)).show(col, |ui| {
+                            // `columns` lays out justified, which stretches wrapped text; left-align it.
+                            col.with_layout(egui::Layout::top_down(egui::Align::LEFT), |col| glass_frame().inner_margin(Margin::same(14)).show(col, |ui| {
                                 ui.set_width(ui.available_width());
                                 ui.set_min_height(58.0);
                                 ui.horizontal(|ui| {
@@ -591,7 +592,7 @@ impl App {
                                     ui.label(RichText::new(&f.title).strong());
                                 });
                                 ui.label(RichText::new(&f.body).color(DIM));
-                            });
+                            }));
                         }
                     });
                     ui.add_space(2.0);
@@ -626,42 +627,44 @@ impl App {
         }
         for row in about.screenshots.chunks(cols) {
             ui.columns(cols, |columns| {
-                for (ui, s) in columns.iter_mut().zip(row) {
-                    let w = ui.available_width();
-                    let aspect = if s.width > 0 && s.height > 0 { s.height as f32 / s.width as f32 } else { 0.625 };
-                    // Wide strips (the CutCat timeline) keep the row's 16:10 box and sit centred in it.
-                    let box_h = w * 0.625;
-                    let (r, resp) = ui.allocate_exact_size(Vec2::new(w, box_h), egui::Sense::click());
-                    let p = ui.painter();
-                    p.rect_filled(r, CornerRadius::same(12), Color32::from_white_alpha(10));
-                    match self.shots.get(&s.url) {
-                        Some(Shot::Ready(t)) => {
-                            let tex = t.size_vec2();
-                            let a = if tex.x > 0.0 { tex.y / tex.x } else { aspect };
-                            let size = if a < 0.625 { Vec2::new(w, w * a) } else { Vec2::new(box_h / a, box_h) };
-                            let ir = egui::Rect::from_center_size(r.center(), size);
-                            egui::Image::new(t).corner_radius(CornerRadius::same(12)).paint_at(ui, ir);
-                            if resp.hovered() {
-                                ui.painter().rect_stroke(r, CornerRadius::same(12), Stroke::new(1.5, ACCENT.gamma_multiply(0.8)), egui::StrokeKind::Inside);
+                for (col, s) in columns.iter_mut().zip(row) {
+                    col.with_layout(egui::Layout::top_down(egui::Align::LEFT), |ui| {
+                        let w = ui.available_width();
+                        let aspect = if s.width > 0 && s.height > 0 { s.height as f32 / s.width as f32 } else { 0.625 };
+                        // Wide strips (the CutCat timeline) keep the row's 16:10 box and sit centred in it.
+                        let box_h = w * 0.625;
+                        let (r, resp) = ui.allocate_exact_size(Vec2::new(w, box_h), egui::Sense::click());
+                        let p = ui.painter();
+                        p.rect_filled(r, CornerRadius::same(12), Color32::from_white_alpha(10));
+                        match self.shots.get(&s.url) {
+                            Some(Shot::Ready(t)) => {
+                                let tex = t.size_vec2();
+                                let a = if tex.x > 0.0 { tex.y / tex.x } else { aspect };
+                                let size = if a < 0.625 { Vec2::new(w, w * a) } else { Vec2::new(box_h / a, box_h) };
+                                let ir = egui::Rect::from_center_size(r.center(), size);
+                                egui::Image::new(t).corner_radius(CornerRadius::same(12)).paint_at(ui, ir);
+                                if resp.hovered() {
+                                    ui.painter().rect_stroke(r, CornerRadius::same(12), Stroke::new(1.5, ACCENT.gamma_multiply(0.8)), egui::StrokeKind::Inside);
+                                }
+                                if resp.on_hover_cursor(egui::CursorIcon::ZoomIn).clicked() {
+                                    self.zoom = Some(s.url.clone());
+                                }
                             }
-                            if resp.on_hover_cursor(egui::CursorIcon::ZoomIn).clicked() {
-                                self.zoom = Some(s.url.clone());
+                            Some(Shot::Failed) => {
+                                p.text(r.center(), egui::Align2::CENTER_CENTER, "Screenshot not available offline", FontId::proportional(13.0), DIM);
+                            }
+                            _ => {
+                                let sp = 22.0;
+                                egui::Spinner::new().size(sp).color(DIM).paint_at(ui, egui::Rect::from_center_size(r.center(), Vec2::splat(sp)));
                             }
                         }
-                        Some(Shot::Failed) => {
-                            p.text(r.center(), egui::Align2::CENTER_CENTER, "Screenshot not available offline", FontId::proportional(13.0), DIM);
+                        if !s.title.is_empty() {
+                            ui.label(RichText::new(&s.title).strong());
                         }
-                        _ => {
-                            let sp = 22.0;
-                            egui::Spinner::new().size(sp).color(DIM).paint_at(ui, egui::Rect::from_center_size(r.center(), Vec2::splat(sp)));
+                        if !s.caption.is_empty() {
+                            ui.label(RichText::new(&s.caption).color(DIM));
                         }
-                    }
-                    if !s.title.is_empty() {
-                        ui.label(RichText::new(&s.title).strong());
-                    }
-                    if !s.caption.is_empty() {
-                        ui.label(RichText::new(&s.caption).color(DIM));
-                    }
+                    });
                 }
             });
             ui.add_space(10.0);
