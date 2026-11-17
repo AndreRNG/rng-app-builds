@@ -1,6 +1,7 @@
 #![cfg_attr(windows, windows_subsystem = "windows")]
 //! RNG Studio: one window that installs, opens and updates RNG Media's apps.
 
+mod rng_design;
 mod store;
 
 use egui::{Color32, CornerRadius, FontId, Margin, RichText, Stroke, TextureHandle, Vec2};
@@ -10,12 +11,12 @@ use store::{About, Installed, Manifest, Release, State};
 
 pub const ICON_BIG: &[u8] = include_bytes!("../assets/studio.png");
 
-const ACCENT: Color32 = Color32::from_rgb(0xff, 0x45, 0x3a);
-const GOLD: Color32 = Color32::from_rgb(0xe8, 0xb8, 0x5c);
-const TEXT: Color32 = Color32::from_rgb(0xf2, 0xf2, 0xf7);
-const DIM: Color32 = Color32::from_rgb(0x98, 0x98, 0x9f);
-const BG_TOP: Color32 = Color32::from_rgb(0x26, 0x26, 0x2a);
-const BG_BOTTOM: Color32 = Color32::from_rgb(0x12, 0x12, 0x14);
+// RNG Design tokens (rng_design.rs, docs/RNG_DESIGN.md): warm graphite glass, one red.
+const P: &rng_design::Palette = &rng_design::DARK;
+const ACCENT: Color32 = rng_design::DARK.accent_text;
+const GOLD: Color32 = rng_design::DARK.value;
+const TEXT: Color32 = rng_design::DARK.text;
+const DIM: Color32 = rng_design::DARK.text_secondary;
 
 fn builtin_icon(id: &str) -> Option<&'static [u8]> {
     Some(match id {
@@ -243,66 +244,84 @@ fn mb(b: u64) -> String {
 }
 
 fn style(ctx: &egui::Context) {
-    ctx.set_visuals(egui::Visuals::dark());
+    // Inter (OFL, assets/fonts) instead of egui's default face, with a semibold for titles.
+    let mut fonts = egui::FontDefinitions::default();
+    fonts.font_data.insert("Inter".into(), Arc::new(egui::FontData::from_static(include_bytes!("../assets/fonts/Inter-Regular.ttf"))));
+    fonts.font_data.insert("Inter-SemiBold".into(), Arc::new(egui::FontData::from_static(include_bytes!("../assets/fonts/Inter-SemiBold.ttf"))));
+    fonts.families.entry(egui::FontFamily::Proportional).or_default().insert(0, "Inter".into());
+    let mut semibold = vec!["Inter-SemiBold".to_string()];
+    semibold.extend(fonts.families.get(&egui::FontFamily::Proportional).cloned().unwrap_or_default());
+    fonts.families.insert(egui::FontFamily::Name("semibold".into()), semibold);
+    ctx.set_fonts(fonts);
+    ctx.set_visuals(rng_design::visuals(P));
     ctx.all_styles_mut(|s| {
+        s.visuals = rng_design::visuals(P);
         s.visuals.panel_fill = Color32::TRANSPARENT;
-        s.visuals.window_fill = Color32::from_rgb(0x2a, 0x2a, 0x2e);
-        s.visuals.override_text_color = Some(TEXT);
-        s.visuals.selection.bg_fill = ACCENT;
-        s.visuals.hyperlink_color = GOLD;
-        s.visuals.extreme_bg_color = Color32::from_white_alpha(14);
-        for w in [&mut s.visuals.widgets.inactive, &mut s.visuals.widgets.hovered, &mut s.visuals.widgets.active] {
-            w.corner_radius = CornerRadius::same(10);
+        s.visuals.widgets.inactive.weak_bg_fill = rng_design::glass_fill(P, rng_design::Glass::Bar);
+        s.visuals.widgets.inactive.bg_stroke = rng_design::rim_stroke(P);
+        s.visuals.widgets.hovered.weak_bg_fill = P.hover;
+        s.visuals.widgets.hovered.bg_stroke = rng_design::rim_stroke(P);
+        for w in [&mut s.visuals.widgets.inactive, &mut s.visuals.widgets.hovered, &mut s.visuals.widgets.active, &mut s.visuals.widgets.open] {
+            w.corner_radius = rng_design::cr(rng_design::radius::CONTROL + 2.0);
         }
-        s.visuals.widgets.inactive.weak_bg_fill = Color32::from_white_alpha(18);
-        s.visuals.widgets.inactive.bg_stroke = Stroke::NONE;
-        s.visuals.widgets.hovered.weak_bg_fill = Color32::from_white_alpha(30);
-        s.visuals.widgets.hovered.bg_stroke = Stroke::new(1.0, Color32::from_white_alpha(40));
+        rng_design::apply_spacing(s);
         s.spacing.button_padding = Vec2::new(14.0, 6.0);
         s.spacing.item_spacing = Vec2::new(8.0, 8.0);
+        s.text_styles.insert(egui::TextStyle::Body, FontId::proportional(rng_design::size::BODY));
+        s.text_styles.insert(egui::TextStyle::Button, FontId::proportional(rng_design::size::BODY));
+        s.text_styles.insert(egui::TextStyle::Small, FontId::proportional(rng_design::size::CAPTION));
         // Labels mustn't swallow clicks meant for the clickable tiles.
         s.interaction.selectable_labels = false;
     });
 }
 
-fn paint_background(ui: &egui::Ui) {
-    let r = ui.max_rect();
-    let p = ui.painter();
-    let mut mesh = egui::Mesh::default();
-    mesh.colored_vertex(r.left_top(), BG_TOP);
-    mesh.colored_vertex(r.right_top(), BG_TOP);
-    mesh.colored_vertex(r.left_bottom(), BG_BOTTOM);
-    mesh.colored_vertex(r.right_bottom(), BG_BOTTOM);
-    mesh.add_triangle(0, 1, 2);
-    mesh.add_triangle(1, 2, 3);
-    p.add(mesh);
-    // A soft red glow behind the header, like light through the glass.
-    let c = r.left_top() + Vec2::new(90.0, 40.0);
-    for i in 0..24 {
-        let t = i as f32 / 24.0;
-        p.circle_filled(c, 320.0 * (1.0 - t), Color32::from_rgba_unmultiplied(0xff, 0x45, 0x3a, (1.0 + 2.0 * t) as u8));
-    }
+fn semibold(size: f32) -> FontId {
+    FontId::new(size, egui::FontFamily::Name("semibold".into()))
 }
 
+fn paint_background(ui: &egui::Ui) {
+    // The warm RNG backdrop the panes of glass float on.
+    rng_design::paint_backdrop(ui.painter(), ui.max_rect(), P);
+}
+
+/// The one primary action of a view (Update, Update all): white on the RNG red, glass rim.
 fn accent_button(ui: &mut egui::Ui, text: &str) -> egui::Response {
+    let resp = ui.add(
+        egui::Button::new(RichText::new(text).color(Color32::WHITE).font(semibold(rng_design::size::BODY)))
+            .fill(P.accent_fill)
+            .stroke(Stroke::NONE)
+            .corner_radius(rng_design::cr(rng_design::radius::CONTROL + 2.0))
+            .min_size(Vec2::new(88.0, rng_design::metric::CONTROL_H)),
+    );
+    rng_design::paint_pane_rim(ui.painter(), resp.rect, rng_design::radius::CONTROL + 2.0, P);
+    resp
+}
+
+/// Install / Open: a glass pill with red text, as the App Store's Get button; red fills are kept for
+/// the one action that needs attention (Update), so a grid of apps isn't a wall of red.
+fn get_button(ui: &mut egui::Ui, text: &str) -> egui::Response {
     ui.add(
-        egui::Button::new(RichText::new(text).color(Color32::WHITE).strong())
-            .fill(ACCENT)
-            .corner_radius(CornerRadius::same(10))
-            .min_size(Vec2::new(92.0, 30.0)),
+        egui::Button::new(RichText::new(text).color(P.accent_text).font(semibold(rng_design::size::BODY)))
+            .corner_radius(rng_design::cr(rng_design::metric::CONTROL_H / 2.0))
+            .min_size(Vec2::new(80.0, rng_design::metric::CONTROL_H)),
     )
 }
 
 fn plain_button(ui: &mut egui::Ui, text: &str) -> egui::Response {
-    ui.add(egui::Button::new(RichText::new(text).color(TEXT)).corner_radius(CornerRadius::same(10)).min_size(Vec2::new(80.0, 30.0)))
+    ui.add(egui::Button::new(RichText::new(text).color(TEXT)).corner_radius(rng_design::cr(rng_design::radius::CONTROL + 2.0)).min_size(Vec2::new(80.0, rng_design::metric::CONTROL_H)))
 }
 
+/// A pane of RNG glass; paint `glass_rim` over its rect afterwards for the specular edge.
 fn glass_frame() -> egui::Frame {
     egui::Frame::new()
-        .fill(Color32::from_white_alpha(11))
-        .stroke(Stroke::new(1.0, Color32::from_white_alpha(22)))
-        .corner_radius(CornerRadius::same(18))
+        .fill(rng_design::glass_fill(P, rng_design::Glass::Sidebar))
+        .stroke(Stroke::new(1.0, Color32::from_white_alpha(14)))
+        .corner_radius(rng_design::cr(rng_design::radius::WINDOW))
         .inner_margin(Margin::same(16))
+}
+
+fn glass_rim(ui: &egui::Ui, rect: egui::Rect) {
+    rng_design::paint_pane_rim(ui.painter(), rect, rng_design::radius::WINDOW, P);
 }
 
 enum Action {
@@ -348,7 +367,7 @@ impl eframe::App for App {
                 }
                 ui.vertical(|ui| {
                     ui.add_space(2.0);
-                    ui.label(RichText::new("RNG Studio").font(FontId::proportional(24.0)).strong());
+                    ui.label(RichText::new("RNG Studio").font(semibold(rng_design::size::LARGE_TITLE)));
                     ui.label(RichText::new("RNG Media apps").color(DIM));
                 });
                 ui.with_layout(egui::Layout::right_to_left(egui::Align::Center), |ui| {
@@ -514,15 +533,15 @@ impl App {
         let resp = ui
             .scope_builder(egui::UiBuilder::new().sense(egui::Sense::click()), |ui| {
                 let lit = ui.response().contains_pointer();
-                let frame = if lit { glass_frame().fill(Color32::from_white_alpha(16)).stroke(Stroke::new(1.0, Color32::from_white_alpha(38))) } else { glass_frame() };
-                frame.show(ui, |ui| {
+                let frame = if lit { glass_frame().fill(rng_design::glass_fill(P, rng_design::Glass::Popover)).stroke(Stroke::new(1.0, Color32::from_white_alpha(28))) } else { glass_frame() };
+                let shown = frame.show(ui, |ui| {
                     ui.set_width(ui.available_width());
                     ui.set_min_height(112.0);
                     ui.horizontal(|ui| {
                         self.app_icon(ui, ctx, app, 80.0);
                         ui.add_space(6.0);
                         ui.vertical(|ui| {
-                            ui.label(RichText::new(&app.name).font(FontId::proportional(19.0)).strong());
+                            ui.label(RichText::new(&app.name).font(semibold(rng_design::size::TITLE1 - 2.0)));
                             ui.label(RichText::new(&app.tagline).color(DIM));
                             version_line(ui, app, inst);
                             ui.add_space(4.0);
@@ -530,6 +549,7 @@ impl App {
                         });
                     });
                 });
+                glass_rim(ui, shown.response.rect);
             })
             .response;
         if resp.on_hover_cursor(egui::CursorIcon::PointingHand).clicked() {
@@ -582,8 +602,8 @@ impl App {
                     self.app_icon(ui, ctx, app, 128.0);
                     ui.add_space(12.0);
                     ui.vertical(|ui| {
-                        ui.label(RichText::new(app.tagline.to_uppercase()).color(ACCENT).small().strong());
-                        ui.label(RichText::new(&app.name).font(FontId::proportional(32.0)).strong());
+                        ui.label(RichText::new(&app.tagline).color(DIM).font(semibold(rng_design::size::CALLOUT)));
+                        ui.label(RichText::new(&app.name).font(semibold(32.0)));
                         if !about.pitch.is_empty() {
                             ui.label(RichText::new(&about.pitch).font(FontId::proportional(17.0)));
                         }
@@ -613,11 +633,8 @@ impl App {
                             col.with_layout(egui::Layout::top_down(egui::Align::LEFT), |col| glass_frame().inner_margin(Margin::same(14)).show(col, |ui| {
                                 ui.set_width(ui.available_width());
                                 ui.set_min_height(58.0);
-                                ui.horizontal(|ui| {
-                                    let (r, _) = ui.allocate_exact_size(Vec2::new(3.0, 18.0), egui::Sense::hover());
-                                    ui.painter().rect_filled(r, CornerRadius::same(2), ACCENT);
-                                    ui.label(RichText::new(&f.title).strong());
-                                });
+                                // RNG Design: weight, not a coloured side bar, marks the title
+                                ui.label(RichText::new(&f.title).font(semibold(rng_design::size::HEADLINE)));
                                 ui.label(RichText::new(&f.body).color(DIM));
                             }));
                         }
@@ -749,7 +766,7 @@ impl App {
 
 fn section(ui: &mut egui::Ui, title: &str) {
     ui.add_space(18.0);
-    ui.label(RichText::new(title).font(FontId::proportional(19.0)).strong());
+    ui.label(RichText::new(title).font(semibold(rng_design::size::TITLE1 - 2.0)));
     ui.add_space(2.0);
 }
 
@@ -758,18 +775,18 @@ fn version_line(ui: &mut egui::Ui, app: &Release, inst: Option<&Installed>) {
         ui.spacing_mut().item_spacing.x = 4.0;
         match inst {
             Some(i) if i.build < app.build => {
-                ui.label(RichText::new(format!("v{}", i.version)).color(GOLD).monospace());
+                ui.label(RichText::new(format!("v{}", i.version)).color(GOLD).small());
                 ui.label(RichText::new(format!("→ v{} available", app.version)).color(DIM).small());
             }
             Some(i) if i.version.is_empty() => {
                 ui.label(RichText::new("installed · updates itself").color(GOLD).small());
             }
             Some(i) => {
-                ui.label(RichText::new(format!("v{}", i.version)).color(GOLD).monospace());
+                ui.label(RichText::new(format!("v{}", i.version)).color(GOLD).small());
                 ui.label(RichText::new("installed").color(DIM).small());
             }
             None => {
-                ui.label(RichText::new(format!("v{}", app.version)).color(DIM).monospace());
+                ui.label(RichText::new(format!("v{}", app.version)).color(DIM).small());
             }
         }
     });
@@ -779,7 +796,7 @@ fn version_line(ui: &mut egui::Ui, app: &Release, inst: Option<&Installed>) {
 fn app_buttons(ui: &mut egui::Ui, app: &Release, inst: Option<&Installed>, job: Option<&Job>, queue_busy: bool, actions: &mut Vec<Action>) {
     match job {
         Some(Job::Busy { label, frac }) => {
-            let bar = egui::ProgressBar::new(frac.unwrap_or(0.0)).text(RichText::new(label).small()).fill(ACCENT).desired_height(18.0);
+            let bar = egui::ProgressBar::new(frac.unwrap_or(0.0)).text(RichText::new(label).small()).fill(P.accent).corner_radius(rng_design::cr(9.0)).desired_height(18.0);
             ui.add(if frac.is_none() { bar.animate(true) } else { bar });
         }
         _ => {
@@ -790,12 +807,12 @@ fn app_buttons(ui: &mut egui::Ui, app: &Release, inst: Option<&Installed>, job: 
                         ui.add_enabled(false, egui::Button::new("Coming soon").min_size(Vec2::new(92.0, 30.0)));
                     }
                     None => {
-                        if accent_button(ui, "Install").clicked() && !queue_busy {
+                        if get_button(ui, "Install").clicked() && !queue_busy {
                             actions.push(Action::Install(app.clone()));
                         }
                     }
                     Some(i) if app.self_updating() => {
-                        if accent_button(ui, "Open").clicked() {
+                        if get_button(ui, "Open").clicked() {
                             actions.push(Action::OpenDetected(i.exe.clone()));
                         }
                         ui.menu_button(RichText::new("•••").strong(), |ui| {
@@ -813,7 +830,7 @@ fn app_buttons(ui: &mut egui::Ui, app: &Release, inst: Option<&Installed>, job: 
                             if plain_button(ui, "Open").clicked() {
                                 actions.push(Action::Open(i.exe.clone()));
                             }
-                        } else if accent_button(ui, "Open").clicked() {
+                        } else if get_button(ui, "Open").clicked() {
                             actions.push(Action::Open(i.exe.clone()));
                         }
                         ui.menu_button(RichText::new("•••").strong(), |ui| {
@@ -905,7 +922,7 @@ fn main() -> eframe::Result {
     }
     let mut viewport = egui::ViewportBuilder::default()
         .with_title("RNG Studio")
-        .with_inner_size([840.0, 560.0])
+        .with_inner_size([980.0, 720.0])
         .with_min_inner_size([440.0, 360.0])
         .with_app_id("media.rng.studio");
     if let Ok(icon) = eframe::icon_data::from_png_bytes(ICON_BIG) {
