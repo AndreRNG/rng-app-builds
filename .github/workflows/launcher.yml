@@ -109,18 +109,10 @@ jobs:
             <key>NSHumanReadableCopyright</key><string>© RNG Media S.L.</string>
           </dict></plist>
           EOF
-              scripts/macos-sign.sh "pkg/RNG Studio.app"
-              ditto -c -k --keepParent "pkg/RNG Studio.app" "out/$stem.zip"
-              echo "RNG Studio.app" > "out/${{ matrix.platform }}.exe.txt"
-              # Drag-to-Applications disk image for people downloading it by hand.
-              mkdir -p dmg && cp -R "pkg/RNG Studio.app" dmg/ && ln -s /Applications dmg/Applications
-              hdiutil create -volname "RNG Studio" -srcfolder dmg -ov -format UDZO "out/RNG-Studio-$v-b${{ github.run_number }}-macos.dmg"
-              if [ -n "${APPLE_API_KEY:-}" ]; then
-                echo "$APPLE_API_KEY" | base64 --decode > "$RUNNER_TEMP/key.p8"
-                xcrun notarytool submit out/*.dmg --key "$RUNNER_TEMP/key.p8" --key-id "$APPLE_API_KEY_ID" \
-                  --issuer "$APPLE_API_ISSUER" --wait --timeout 30m && xcrun stapler staple out/*.dmg
-                rm -f "$RUNNER_TEMP/key.p8"
-              fi ;;
+              # Signed + notarized .zip (self-update) and drag-to-Applications .dmg (website download).
+              scripts/macos-sign.sh "pkg/RNG Studio.app" out "$stem"
+              mv "out/$stem.dmg" "out/RNG-Studio-$v-b${{ github.run_number }}-macos.dmg"
+              echo "RNG Studio.app" > "out/${{ matrix.platform }}.exe.txt" ;;
           esac
           ls -la out
       - uses: actions/upload-artifact@v4

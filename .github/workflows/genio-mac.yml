@@ -1,0 +1,50 @@
+name: Sign Genio for Mac
+
+# Genio's Mac app is built on Linux (Genio repo, packaging/build_macapp.py) and published unsigned
+# on the AndreRNG/rng-studio release <tag>. This signs it with the Developer ID (hardened runtime,
+# microphone entitlement), notarizes + staples it, wraps it in the drag-to-Applications .dmg and
+# attaches the signed .zip/.dmg (same file names) to a release "genio-mac-b<run>" here.
+on:
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: "Release on AndreRNG/rng-studio with the unsigned Mac zip"
+        default: genio-v2.0
+      file:
+        description: "Unsigned zip on that release"
+        default: Genio-v2.0-mac-intel.zip
+
+permissions:
+  contents: write
+
+jobs:
+  sign:
+    runs-on: macos-latest
+    timeout-minutes: 90
+    env:
+      GH_TOKEN: ${{ github.token }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: Fetch the unsigned app
+        run: |
+          gh release download "${{ inputs.tag }}" -R AndreRNG/rng-studio -p "${{ inputs.file }}" -D in
+          ditto -x -k "in/${{ inputs.file }}" pkg
+          # Same fix as the launcher: Python must not write .pyc files into the signed bundle.
+          /usr/libexec/PlistBuddy -c "Add :LSEnvironment dict" pkg/Genio.app/Contents/Info.plist 2>/dev/null || true
+          /usr/libexec/PlistBuddy -c "Add :LSEnvironment:PYTHONDONTWRITEBYTECODE string 1" pkg/Genio.app/Contents/Info.plist
+      - name: Sign, notarize, staple, dmg
+        env:
+          APPLE_CERTIFICATE: ${{ secrets.APPLE_CERTIFICATE }}
+          APPLE_CERTIFICATE_PASSWORD: ${{ secrets.APPLE_CERTIFICATE_PASSWORD }}
+          APPLE_API_KEY: ${{ secrets.APPLE_API_KEY }}
+          APPLE_API_KEY_ID: ${{ secrets.APPLE_API_KEY_ID }}
+          APPLE_API_ISSUER: ${{ secrets.APPLE_API_ISSUER }}
+        run: |
+          [ -n "$APPLE_CERTIFICATE" ] || { echo "::error::Apple secrets missing"; exit 1; }
+          f="${{ inputs.file }}"
+          scripts/macos-sign.sh pkg/Genio.app out "${f%.zip}" mac/entitlements/genio.plist
+          ls -la out
+      - name: Release
+        run: |
+          gh release create "genio-mac-b${{ github.run_number }}" -R "${{ github.repository }}" \
+            --title "Genio for Mac, signed (from ${{ inputs.tag }})" --notes "Developer ID signed + notarized" out/*

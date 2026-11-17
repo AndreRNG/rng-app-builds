@@ -184,10 +184,12 @@ jobs:
             <key>LSMinimumSystemVersion</key><string>11.0</string>
             <key>NSHighResolutionCapable</key><true/>
             <key>NSHumanReadableCopyright</key><string>RNG Media S.L. Based on open-source code (MIT/Apache-2.0), see NOTICE.</string>
+            <key>NSMicrophoneUsageDescription</key><string>$NAME uses the microphone only when you record audio.</string>
           </dict></plist>
           EOF
-              meta/scripts/macos-sign.sh "pkg/$NAME.app"
-              ditto -c -k --keepParent "pkg/$NAME.app" "out/$stem.zip"
+              ent="meta/mac/entitlements/$APP.plist"; [ -f "$ent" ] || ent=meta/mac/entitlements/default.plist
+              # Signed + notarized .zip (RNG Studio installs it) and drag-to-Applications .dmg (people).
+              meta/scripts/macos-sign.sh "pkg/$NAME.app" out "$stem" "$ent"
               echo "exe=$NAME.app" > out/exe.txt ;;
           esac
           mv out/exe.txt "out/${{ matrix.platform }}.exe.txt"
@@ -232,4 +234,4 @@ jobs:
           gh release create "$APP-b${{ needs.prep.outputs.build }}" -R "${{ github.repository }}" \
             --title "${{ needs.prep.outputs.name }} ${{ needs.prep.outputs.version }} (build ${{ needs.prep.outputs.build }})" \
             --notes "Platforms: $(jq -r '.platforms|keys|join(", ")' "$APP.json")" \
-            *.tar.gz *.zip "$APP.json"
+            *.tar.gz *.zip $(ls *.dmg 2>/dev/null) "$APP.json"

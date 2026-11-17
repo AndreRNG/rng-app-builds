@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="660" height="400" viewBox="0 0 660 400">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#f7ede2"/><stop offset="1" stop-color="#efe1d1"/>
+    </linearGradient>
+  </defs>
+  <rect width="660" height="400" fill="url(#bg)"/>
+  <!-- arrow from the app (x 180) to Applications (x 480), icon centre y 180 -->
+  <path d="M268 180 C 305 150, 355 150, 384 172" fill="none" stroke="#2a201c" stroke-width="5" stroke-linecap="round" stroke-dasharray="1 13"/>
+  <path d="M383 156 L 392 180 L 367 182" fill="none" stroke="#ed1c24" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/>
+  <text x="330" y="330" text-anchor="middle" font-family="Inter Variable, Inter, sans-serif" font-size="17" font-weight="600" fill="#2a201c">Drag the app into Applications</text>
+  <text x="330" y="354" text-anchor="middle" font-family="Inter Variable, Inter, sans-serif" font-size="12.5" fill="#6b5a50">Then open it from Launchpad or your Applications folder.</text>
+  <circle cx="330" cy="382" r="3" fill="#ed1c24"/>
+</svg>
