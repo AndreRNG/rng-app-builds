@@ -24,6 +24,7 @@ fn builtin_icon(id: &str) -> Option<&'static [u8]> {
         "pdfrog" => include_bytes!("../assets/pdfrog.png"),
         "docduck" => include_bytes!("../assets/docduck.png"),
         "slideseal" => include_bytes!("../assets/slideseal.png"),
+        "genio" => include_bytes!("../assets/genio.png"),
         "studio" => include_bytes!("../assets/studio.png"),
         _ => return None,
     })
