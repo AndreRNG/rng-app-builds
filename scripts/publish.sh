@@ -2,7 +2,9 @@
 # publish.sh <tag>... : copy finished builds from the private repo's releases to the PUBLIC
 # AndreRNG/rng-studio releases and rewrite its manifest.json (what RNG Studio reads through
 # www.rng.media/apps/manifest.json). Tags look like cutcat-b12 or studio-b7; "latest" = the
-# newest release of every app and the launcher.
+# newest release of every app and the launcher; "about" alone only refreshes the apps' `about`
+# blocks (pitch, features, screenshots for the launcher's detail view) from about.json, which
+# scripts/gen-about.mjs builds from the rng.media app pages.
 set -euo pipefail
 PRIV=AndreRNG/rng-app-builds  # public now; name kept
 PUB=AndreRNG/rng-studio
@@ -25,6 +27,7 @@ print("\n".join(seen.values()))')
 fi
 
 for tag in "${tags[@]}"; do
+  [ "$tag" = about ] && continue
   id=${tag%-b*}
   d="$work/$tag"
   rm -rf "$d"; mkdir -p "$d"
@@ -80,6 +83,7 @@ done
 
 # Licences, notices and our change list for every published app (linked from the download page).
 for tag in "${tags[@]}"; do
+  [ "$tag" = about ] && continue
   id=${tag%-b*}
   dst="$pubdir/licences/$id"; rm -rf "$dst"; mkdir -p "$dst"
   if [ "$id" = studio ]; then
@@ -90,6 +94,16 @@ for tag in "${tags[@]}"; do
     git -C "$src" archive rng licenses 2>/dev/null | tar -x -C "$dst" || true
   fi
 done
+
+python3 - "$here/about.json" "$pubdir/manifest.json" <<'PY'
+import json, sys
+about, man_path = json.load(open(sys.argv[1])), sys.argv[2]
+m = json.load(open(man_path))
+for a in m["apps"]:
+    if a["id"] in about:
+        a["about"] = about[a["id"]]
+json.dump(m, open(man_path, "w"), indent=2)
+PY
 
 cd "$pubdir"
 git add manifest.json licences

@@ -6,7 +6,7 @@ mod store;
 use egui::{Color32, CornerRadius, FontId, Margin, RichText, Stroke, TextureHandle, Vec2};
 use std::collections::HashMap;
 use std::sync::{Arc, Mutex};
-use store::{Installed, Manifest, Release, State};
+use store::{About, Installed, Manifest, Release, State};
 
 pub const ICON_BIG: &[u8] = include_bytes!("../assets/studio.png");
 
@@ -45,10 +45,29 @@ struct Shared {
     queue_busy: bool,
 }
 
+type Decoded = Arc<Mutex<Vec<(String, Option<egui::ColorImage>)>>>;
+
+enum Shot {
+    Loading,
+    Ready(TextureHandle),
+    Failed,
+}
+
 struct App {
     shared: Arc<Mutex<Shared>>,
     icons: HashMap<String, TextureHandle>,
     show_about: bool,
+    /// The app whose detail view is open.
+    detail: Option<String>,
+    /// Screenshot shown full-window.
+    zoom: Option<String>,
+    shots: HashMap<String, Shot>,
+    /// Decoded screenshots from the loader threads, turned into textures on the UI thread.
+    decoded: Decoded,
+    /// Testing: RNG_STUDIO_SHOT=<png> saves the window once it has settled, then closes it.
+    shot_to: Option<(std::path::PathBuf, u32)>,
+    zoom_first: bool,
+    scroll_to: Option<f32>,
 }
 
 const THIRD_PARTY: &str = include_str!("../assets/THIRD-PARTY.txt");
@@ -60,7 +79,26 @@ impl App {
         for (id, i) in &state.apps {
             store::clean_stale(id, &i.dir);
         }
-        let app = Self { shared: Arc::new(Mutex::new(Shared { state, ..Default::default() })), icons: HashMap::new(), show_about: false };
+        let app = Self {
+            shared: Arc::new(Mutex::new(Shared { state, ..Default::default() })),
+            icons: HashMap::new(),
+            show_about: false,
+            detail: None,
+            zoom: None,
+            shots: HashMap::new(),
+            decoded: Arc::default(),
+            shot_to: std::env::var_os("RNG_STUDIO_SHOT").map(|p| (p.into(), 0)),
+            zoom_first: false,
+            // Testing: RNG_STUDIO_SCROLL=<px> starts the detail view scrolled down.
+            scroll_to: std::env::var("RNG_STUDIO_SCROLL").ok().and_then(|v| v.parse().ok()),
+        };
+        // Testing: RNG_STUDIO_SHOW=<app id>[:zoom] starts on that app's detail view.
+        let mut app = app;
+        if let Ok(v) = std::env::var("RNG_STUDIO_SHOW") {
+            let (id, zoom) = v.split_once(':').map(|(a, b)| (a.to_string(), b == "zoom")).unwrap_or((v.clone(), false));
+            app.detail = Some(id);
+            app.zoom_first = zoom;
+        }
         app.refresh(&cc.egui_ctx);
         app
     }
@@ -71,17 +109,25 @@ impl App {
         shared.lock().unwrap().loading = true;
         std::thread::spawn(move || {
             let r = store::fetch_manifest();
-            let mut s = shared.lock().unwrap();
-            s.loading = false;
-            match r {
-                Ok((m, note)) => {
-                    store::shortcuts::migrate(&s.state.apps, &m);
-                    s.manifest = Some(m);
-                    s.note = note;
+            let mut urls = Vec::new();
+            {
+                let mut s = shared.lock().unwrap();
+                s.loading = false;
+                match r {
+                    Ok((m, note)) => {
+                        store::shortcuts::migrate(&s.state.apps, &m);
+                        urls = m.apps.iter().filter_map(|a| a.about.as_ref()).flat_map(|a| a.screenshots.iter().map(|x| x.url.clone())).collect();
+                        s.manifest = Some(m);
+                        s.note = note;
+                    }
+                    Err(e) => s.note = Some(e),
                 }
-                Err(e) => s.note = Some(e),
             }
             ctx.request_repaint();
+            // Fill the screenshot cache in the background, so detail views open with pictures.
+            for u in urls {
+                let _ = store::screenshot(&u);
+            }
         });
     }
 
@@ -146,6 +192,34 @@ impl App {
         });
     }
 
+    /// Starts loading a screenshot (cache or network) unless it's loaded or on its way.
+    fn request_shot(&mut self, ctx: &egui::Context, url: &str) {
+        if self.shots.contains_key(url) {
+            return;
+        }
+        self.shots.insert(url.into(), Shot::Loading);
+        let (url, out, ctx) = (url.to_string(), self.decoded.clone(), ctx.clone());
+        std::thread::spawn(move || {
+            let img = store::screenshot(&url).ok().and_then(|b| image::load_from_memory(&b).ok()).map(|i| {
+                let i = i.to_rgba8();
+                egui::ColorImage::from_rgba_unmultiplied([i.width() as usize, i.height() as usize], i.as_raw())
+            });
+            out.lock().unwrap().push((url, img));
+            ctx.request_repaint();
+        });
+    }
+
+    fn take_decoded(&mut self, ctx: &egui::Context) {
+        let done: Vec<_> = std::mem::take(&mut *self.decoded.lock().unwrap());
+        for (url, img) in done {
+            let shot = match img {
+                Some(ci) => Shot::Ready(ctx.load_texture(&url, ci, egui::TextureOptions::LINEAR.with_mipmap_mode(Some(egui::TextureFilter::Linear)))),
+                None => Shot::Failed,
+            };
+            self.shots.insert(url, shot);
+        }
+    }
+
     fn icon(&mut self, ctx: &egui::Context, id: &str) -> Option<TextureHandle> {
         if let Some(t) = self.icons.get(id) {
             return Some(t.clone());
@@ -180,6 +254,8 @@ fn style(ctx: &egui::Context) {
         s.visuals.widgets.hovered.bg_stroke = Stroke::new(1.0, Color32::from_white_alpha(40));
         s.spacing.button_padding = Vec2::new(14.0, 6.0);
         s.spacing.item_spacing = Vec2::new(8.0, 8.0);
+        // Labels mustn't swallow clicks meant for the clickable tiles.
+        s.interaction.selectable_labels = false;
     });
 }
 
@@ -229,11 +305,13 @@ enum Action {
     Uninstall(Release),
     ShowFiles(std::path::PathBuf),
     Dismiss(String),
+    Details(String),
 }
 
 impl eframe::App for App {
     fn ui(&mut self, ui: &mut egui::Ui, _frame: &mut eframe::Frame) {
         let ctx = ui.ctx().clone();
+        self.take_decoded(&ctx);
         paint_background(ui);
         let (manifest, note, loading, state, jobs, queue_busy) = {
             let s = self.shared.lock().unwrap();
@@ -260,6 +338,7 @@ impl eframe::App for App {
                 });
                 ui.with_layout(egui::Layout::right_to_left(egui::Align::Center), |ui| {
                     if ui.add_enabled(!loading, egui::Button::new(RichText::new("Check for updates").color(TEXT)).corner_radius(CornerRadius::same(10)).min_size(Vec2::new(0.0, 30.0))).clicked() {
+                        self.shots.retain(|_, s| !matches!(s, Shot::Failed));
                         self.refresh(&ctx);
                     }
                     if !updatable.is_empty() && !queue_busy && accent_button(ui, &format!("Update all ({})", updatable.len())).clicked() {
@@ -312,6 +391,12 @@ impl eframe::App for App {
                 return;
             }
 
+            if let Some(app) = self.detail.as_ref().and_then(|id| apps.iter().find(|a| &a.id == id)).cloned() {
+                self.detail_view(ui, &ctx, &app, state.apps.get(&app.id), jobs.get(&app.id), queue_busy, &mut actions);
+                return;
+            }
+            self.detail = None;
+
             egui::ScrollArea::vertical().auto_shrink([false, true]).show(ui, |ui| {
                 let cols = ((ui.available_width() + 14.0) / 380.0).floor().clamp(1.0, 3.0) as usize;
                 for row in apps.chunks(cols) {
@@ -337,6 +422,15 @@ impl eframe::App for App {
                 });
             });
         });
+
+        if self.zoom_first {
+            if let Some(u) = self.shots.iter().find(|(_, s)| matches!(s, Shot::Ready(_))).map(|(u, _)| u.clone()) {
+                self.zoom = Some(u);
+                self.zoom_first = false;
+            }
+        }
+        self.zoom_overlay(&ctx);
+        self.test_shot(&ctx);
 
         if self.show_about {
             let mut open = true;
@@ -387,6 +481,7 @@ impl eframe::App for App {
                 Action::Dismiss(id) => {
                     self.shared.lock().unwrap().jobs.remove(&id);
                 }
+                Action::Details(id) => self.detail = Some(id),
             }
         }
     }
@@ -395,99 +490,309 @@ impl eframe::App for App {
 impl App {
     #[allow(clippy::too_many_arguments)]
     fn tile(&mut self, ui: &mut egui::Ui, ctx: &egui::Context, app: &Release, inst: Option<&Installed>, job: Option<&Job>, queue_busy: bool, actions: &mut Vec<Action>) {
-        glass_frame().show(ui, |ui| {
-            ui.set_width(ui.available_width());
-            ui.set_min_height(112.0);
-            ui.horizontal(|ui| {
-                match self.icon(ctx, &app.id) {
-                    Some(t) => {
-                        ui.add(egui::Image::new(&t).fit_to_exact_size(Vec2::splat(80.0)));
-                    }
-                    None => {
-                        let (r, _) = ui.allocate_exact_size(Vec2::splat(80.0), egui::Sense::hover());
-                        ui.painter().rect_filled(r, CornerRadius::same(20), Color32::from_white_alpha(20));
-                        ui.painter().text(r.center(), egui::Align2::CENTER_CENTER, app.name.chars().next().unwrap_or('?'), FontId::proportional(36.0), TEXT);
-                    }
-                }
-                ui.add_space(6.0);
-                ui.vertical(|ui| {
-                    ui.label(RichText::new(&app.name).font(FontId::proportional(19.0)).strong());
-                    ui.label(RichText::new(&app.tagline).color(DIM));
+        // The whole tile opens the detail view; its buttons sit on top and keep their own clicks.
+        let resp = ui
+            .scope_builder(egui::UiBuilder::new().sense(egui::Sense::click()), |ui| {
+                let lit = ui.response().contains_pointer();
+                let frame = if lit { glass_frame().fill(Color32::from_white_alpha(16)).stroke(Stroke::new(1.0, Color32::from_white_alpha(38))) } else { glass_frame() };
+                frame.show(ui, |ui| {
+                    ui.set_width(ui.available_width());
+                    ui.set_min_height(112.0);
                     ui.horizontal(|ui| {
-                        ui.spacing_mut().item_spacing.x = 4.0;
-                        match inst {
-                            Some(i) if i.build < app.build => {
-                                ui.label(RichText::new(format!("v{}", i.version)).color(GOLD).monospace());
-                                ui.label(RichText::new(format!("→ v{} available", app.version)).color(DIM).small());
-                            }
-                            Some(i) => {
-                                ui.label(RichText::new(format!("v{}", i.version)).color(GOLD).monospace());
-                                ui.label(RichText::new("installed").color(DIM).small());
-                            }
-                            None => {
-                                ui.label(RichText::new(format!("v{}", app.version)).color(DIM).monospace());
-                            }
+                        self.app_icon(ui, ctx, app, 80.0);
+                        ui.add_space(6.0);
+                        ui.vertical(|ui| {
+                            ui.label(RichText::new(&app.name).font(FontId::proportional(19.0)).strong());
+                            ui.label(RichText::new(&app.tagline).color(DIM));
+                            version_line(ui, app, inst);
+                            ui.add_space(4.0);
+                            app_buttons(ui, app, inst, job, queue_busy, actions);
+                        });
+                    });
+                });
+            })
+            .response;
+        if resp.on_hover_cursor(egui::CursorIcon::PointingHand).clicked() {
+            actions.push(Action::Details(app.id.clone()));
+        }
+    }
+
+    fn app_icon(&mut self, ui: &mut egui::Ui, ctx: &egui::Context, app: &Release, size: f32) {
+        match self.icon(ctx, &app.id) {
+            Some(t) => {
+                ui.add(egui::Image::new(&t).fit_to_exact_size(Vec2::splat(size)));
+            }
+            None => {
+                let (r, _) = ui.allocate_exact_size(Vec2::splat(size), egui::Sense::hover());
+                ui.painter().rect_filled(r, CornerRadius::same((size / 4.0) as u8), Color32::from_white_alpha(20));
+                ui.painter().text(r.center(), egui::Align2::CENTER_CENTER, app.name.chars().next().unwrap_or('?'), FontId::proportional(size * 0.45), TEXT);
+            }
+        }
+    }
+
+    /// One app, the way its page on rng.media shows it: pitch, buttons, what it does, features,
+    /// screenshots and the open-source credit. The copy comes from the manifest's `about` block.
+    #[allow(clippy::too_many_arguments)]
+    fn detail_view(&mut self, ui: &mut egui::Ui, ctx: &egui::Context, app: &Release, inst: Option<&Installed>, job: Option<&Job>, queue_busy: bool, actions: &mut Vec<Action>) {
+        let about = app.about.clone().unwrap_or_default();
+        if ctx.input(|i| i.key_pressed(egui::Key::Escape) || i.pointer.button_pressed(egui::PointerButton::Extra1)) && self.zoom.is_none() {
+            self.detail = None;
+        }
+        if plain_button(ui, "‹  All apps").clicked() {
+            self.detail = None;
+        }
+        ui.add_space(6.0);
+        let mut scroll = egui::ScrollArea::vertical().id_salt(("detail", &app.id)).auto_shrink([false, false]);
+        if let Some(y) = self.scroll_to.take() {
+            scroll = scroll.vertical_scroll_offset(y);
+        }
+        scroll.show(ui, |ui| {
+            ui.set_width(ui.available_width());
+            // Hero
+            glass_frame().inner_margin(Margin::same(22)).show(ui, |ui| {
+                ui.set_width(ui.available_width());
+                ui.horizontal(|ui| {
+                    self.app_icon(ui, ctx, app, 128.0);
+                    ui.add_space(12.0);
+                    ui.vertical(|ui| {
+                        ui.label(RichText::new(app.tagline.to_uppercase()).color(ACCENT).small().strong());
+                        ui.label(RichText::new(&app.name).font(FontId::proportional(32.0)).strong());
+                        if !about.pitch.is_empty() {
+                            ui.label(RichText::new(&about.pitch).font(FontId::proportional(17.0)));
+                        }
+                        version_line(ui, app, inst);
+                        ui.add_space(4.0);
+                        app_buttons(ui, app, inst, job, queue_busy, actions);
+                    });
+                });
+                if !about.intro.is_empty() {
+                    ui.add_space(10.0);
+                    ui.label(RichText::new(&about.intro).color(DIM));
+                }
+            });
+
+            if !about.description.is_empty() {
+                section(ui, "What it does");
+                ui.label(&about.description);
+            }
+
+            if !about.features.is_empty() {
+                section(ui, "Standout features");
+                let cols = if ui.available_width() > 640.0 { 2 } else { 1 };
+                for row in about.features.chunks(cols) {
+                    ui.columns(cols, |columns| {
+                        for (col, f) in columns.iter_mut().zip(row) {
+                            glass_frame().inner_margin(Margin::same(14)).show(col, |ui| {
+                                ui.set_width(ui.available_width());
+                                ui.set_min_height(58.0);
+                                ui.horizontal(|ui| {
+                                    let (r, _) = ui.allocate_exact_size(Vec2::new(3.0, 18.0), egui::Sense::hover());
+                                    ui.painter().rect_filled(r, CornerRadius::same(2), ACCENT);
+                                    ui.label(RichText::new(&f.title).strong());
+                                });
+                                ui.label(RichText::new(&f.body).color(DIM));
+                            });
                         }
                     });
-                    ui.add_space(4.0);
-                    match job {
-                        Some(Job::Busy { label, frac }) => {
-                            let bar = egui::ProgressBar::new(frac.unwrap_or(0.0)).text(RichText::new(label).small()).fill(ACCENT).desired_height(18.0);
-                            ui.add(if frac.is_none() { bar.animate(true) } else { bar });
-                        }
-                        _ => {
-                            ui.horizontal(|ui| {
-                                let can = app.asset().is_some();
-                                match inst {
-                                    _ if !can && inst.is_none() => {
-                                        ui.add_enabled(false, egui::Button::new("Coming soon").min_size(Vec2::new(92.0, 30.0)));
-                                    }
-                                    None => {
-                                        if accent_button(ui, "Install").clicked() && !queue_busy {
-                                            actions.push(Action::Install(app.clone()));
-                                        }
-                                    }
-                                    Some(i) => {
-                                        if can && i.build < app.build {
-                                            if accent_button(ui, "Update").clicked() && !queue_busy {
-                                                actions.push(Action::Install(app.clone()));
-                                            }
-                                            if plain_button(ui, "Open").clicked() {
-                                                actions.push(Action::Open(i.exe.clone()));
-                                            }
-                                        } else if accent_button(ui, "Open").clicked() {
-                                            actions.push(Action::Open(i.exe.clone()));
-                                        }
-                                        ui.menu_button(RichText::new("⋯").strong(), |ui| {
-                                            if ui.button("Show files").clicked() {
-                                                actions.push(Action::ShowFiles(i.dir.clone()));
-                                                ui.close();
-                                            }
-                                            if ui.button("Reinstall").clicked() && !queue_busy {
-                                                actions.push(Action::Install(app.clone()));
-                                                ui.close();
-                                            }
-                                            if ui.button(RichText::new("Uninstall").color(ACCENT)).clicked() {
-                                                actions.push(Action::Uninstall(app.clone()));
-                                                ui.close();
-                                            }
-                                        });
-                                    }
-                                }
-                            });
-                            if let Some(Job::Failed(e)) = job {
-                                ui.horizontal_wrapped(|ui| {
-                                    ui.label(RichText::new(e).color(ACCENT).small());
-                                    if ui.small_button("OK").clicked() {
-                                        actions.push(Action::Dismiss(app.id.clone()));
-                                    }
-                                });
+                    ui.add_space(2.0);
+                }
+            }
+
+            if !about.screenshots.is_empty() {
+                section(ui, "Screenshots");
+                self.gallery(ui, ctx, &about);
+            }
+
+            ui.add_space(18.0);
+            ui.separator();
+            ui.add_space(6.0);
+            let credit = if about.credit.is_empty() { format!("{} is based on an open-source project by the ArtCraft team, licensed MIT OR Apache-2.0, and modified by RNG Media S.L.", app.name) } else { about.credit.clone() };
+            ui.label(RichText::new(credit).color(DIM).size(12.5));
+            ui.horizontal(|ui| {
+                let page = if about.page.is_empty() { "https://www.rng.media/studio".to_string() } else { about.page.clone() };
+                let licences = if about.licences.is_empty() { "https://github.com/AndreRNG/rng-studio/tree/main/licences".to_string() } else { about.licences.clone() };
+                ui.hyperlink_to(RichText::new("Licences and notices").small(), licences);
+                ui.label(RichText::new("·").color(DIM).small());
+                ui.hyperlink_to(RichText::new(format!("{} on rng.media", app.name)).small(), page);
+            });
+            ui.add_space(8.0);
+        });
+    }
+
+    fn gallery(&mut self, ui: &mut egui::Ui, ctx: &egui::Context, about: &About) {
+        let cols = if ui.available_width() > 640.0 { 2 } else { 1 };
+        for s in &about.screenshots {
+            self.request_shot(ctx, &s.url);
+        }
+        for row in about.screenshots.chunks(cols) {
+            ui.columns(cols, |columns| {
+                for (ui, s) in columns.iter_mut().zip(row) {
+                    let w = ui.available_width();
+                    let aspect = if s.width > 0 && s.height > 0 { s.height as f32 / s.width as f32 } else { 0.625 };
+                    // Wide strips (the CutCat timeline) keep the row's 16:10 box and sit centred in it.
+                    let box_h = w * 0.625;
+                    let (r, resp) = ui.allocate_exact_size(Vec2::new(w, box_h), egui::Sense::click());
+                    let p = ui.painter();
+                    p.rect_filled(r, CornerRadius::same(12), Color32::from_white_alpha(10));
+                    match self.shots.get(&s.url) {
+                        Some(Shot::Ready(t)) => {
+                            let tex = t.size_vec2();
+                            let a = if tex.x > 0.0 { tex.y / tex.x } else { aspect };
+                            let size = if a < 0.625 { Vec2::new(w, w * a) } else { Vec2::new(box_h / a, box_h) };
+                            let ir = egui::Rect::from_center_size(r.center(), size);
+                            egui::Image::new(t).corner_radius(CornerRadius::same(12)).paint_at(ui, ir);
+                            if resp.hovered() {
+                                ui.painter().rect_stroke(r, CornerRadius::same(12), Stroke::new(1.5, ACCENT.gamma_multiply(0.8)), egui::StrokeKind::Inside);
+                            }
+                            if resp.on_hover_cursor(egui::CursorIcon::ZoomIn).clicked() {
+                                self.zoom = Some(s.url.clone());
                             }
                         }
+                        Some(Shot::Failed) => {
+                            p.text(r.center(), egui::Align2::CENTER_CENTER, "Screenshot not available offline", FontId::proportional(13.0), DIM);
+                        }
+                        _ => {
+                            let sp = 22.0;
+                            egui::Spinner::new().size(sp).color(DIM).paint_at(ui, egui::Rect::from_center_size(r.center(), Vec2::splat(sp)));
+                        }
+                    }
+                    if !s.title.is_empty() {
+                        ui.label(RichText::new(&s.title).strong());
+                    }
+                    if !s.caption.is_empty() {
+                        ui.label(RichText::new(&s.caption).color(DIM));
+                    }
+                }
+            });
+            ui.add_space(10.0);
+        }
+    }
+
+    fn test_shot(&mut self, ctx: &egui::Context) {
+        let Some((path, frames)) = self.shot_to.as_mut() else { return };
+        *frames += 1;
+        let settled = !self.shots.values().any(|s| matches!(s, Shot::Loading)) && !self.zoom_first;
+        if *frames == 400 || (*frames > 30 && settled && *frames < 400) {
+            *frames = 400;
+            let (path, c) = (path.clone(), ctx.clone());
+            ctx.request_screenshot(move |img| {
+                let _ = image::save_buffer(&path, img.as_raw(), img.width() as u32, img.height() as u32, image::ColorType::Rgba8);
+                c.send_viewport_cmd(egui::ViewportCommand::Close);
+                c.request_repaint();
+            });
+        }
+        ctx.request_repaint();
+    }
+
+    fn zoom_overlay(&mut self, ctx: &egui::Context) {
+        let Some(url) = self.zoom.clone() else { return };
+        let Some(Shot::Ready(t)) = self.shots.get(&url) else {
+            self.zoom = None;
+            return;
+        };
+        let t = t.clone();
+        let screen = ctx.content_rect();
+        let mut close = ctx.input(|i| i.key_pressed(egui::Key::Escape));
+        egui::Area::new(egui::Id::unique("rng-studio-zoom")).order(egui::Order::Foreground).fixed_pos(screen.min).show(ctx, |ui| {
+            let (r, resp) = ui.allocate_exact_size(screen.size(), egui::Sense::click());
+            ui.painter().rect_filled(r, CornerRadius::ZERO, Color32::from_black_alpha(225));
+            let room = r.shrink(28.0);
+            let tex = t.size_vec2();
+            let scale = (room.width() / tex.x).min(room.height() / tex.y).min(1.5);
+            egui::Image::new(&t).corner_radius(CornerRadius::same(10)).paint_at(ui, egui::Rect::from_center_size(r.center(), tex * scale));
+            let x = egui::Rect::from_center_size(r.right_top() + Vec2::new(-26.0, 26.0), Vec2::splat(12.0));
+            let st = Stroke::new(2.0, TEXT);
+            ui.painter().line_segment([x.left_top(), x.right_bottom()], st);
+            ui.painter().line_segment([x.right_top(), x.left_bottom()], st);
+            close |= resp.clicked();
+        });
+        if close {
+            self.zoom = None;
+        }
+    }
+}
+
+fn section(ui: &mut egui::Ui, title: &str) {
+    ui.add_space(18.0);
+    ui.label(RichText::new(title).font(FontId::proportional(19.0)).strong());
+    ui.add_space(2.0);
+}
+
+fn version_line(ui: &mut egui::Ui, app: &Release, inst: Option<&Installed>) {
+    ui.horizontal(|ui| {
+        ui.spacing_mut().item_spacing.x = 4.0;
+        match inst {
+            Some(i) if i.build < app.build => {
+                ui.label(RichText::new(format!("v{}", i.version)).color(GOLD).monospace());
+                ui.label(RichText::new(format!("→ v{} available", app.version)).color(DIM).small());
+            }
+            Some(i) => {
+                ui.label(RichText::new(format!("v{}", i.version)).color(GOLD).monospace());
+                ui.label(RichText::new("installed").color(DIM).small());
+            }
+            None => {
+                ui.label(RichText::new(format!("v{}", app.version)).color(DIM).monospace());
+            }
+        }
+    });
+}
+
+/// Install / Update / Open (and the ⋯ menu), or the progress bar while a job runs.
+fn app_buttons(ui: &mut egui::Ui, app: &Release, inst: Option<&Installed>, job: Option<&Job>, queue_busy: bool, actions: &mut Vec<Action>) {
+    match job {
+        Some(Job::Busy { label, frac }) => {
+            let bar = egui::ProgressBar::new(frac.unwrap_or(0.0)).text(RichText::new(label).small()).fill(ACCENT).desired_height(18.0);
+            ui.add(if frac.is_none() { bar.animate(true) } else { bar });
+        }
+        _ => {
+            ui.horizontal(|ui| {
+                let can = app.asset().is_some();
+                match inst {
+                    _ if !can && inst.is_none() => {
+                        ui.add_enabled(false, egui::Button::new("Coming soon").min_size(Vec2::new(92.0, 30.0)));
+                    }
+                    None => {
+                        if accent_button(ui, "Install").clicked() && !queue_busy {
+                            actions.push(Action::Install(app.clone()));
+                        }
+                    }
+                    Some(i) => {
+                        if can && i.build < app.build {
+                            if accent_button(ui, "Update").clicked() && !queue_busy {
+                                actions.push(Action::Install(app.clone()));
+                            }
+                            if plain_button(ui, "Open").clicked() {
+                                actions.push(Action::Open(i.exe.clone()));
+                            }
+                        } else if accent_button(ui, "Open").clicked() {
+                            actions.push(Action::Open(i.exe.clone()));
+                        }
+                        ui.menu_button(RichText::new("⋯").strong(), |ui| {
+                            if ui.button("Show files").clicked() {
+                                actions.push(Action::ShowFiles(i.dir.clone()));
+                                ui.close();
+                            }
+                            if ui.button("Reinstall").clicked() && !queue_busy {
+                                actions.push(Action::Install(app.clone()));
+                                ui.close();
+                            }
+                            if ui.button(RichText::new("Uninstall").color(ACCENT)).clicked() {
+                                actions.push(Action::Uninstall(app.clone()));
+                                ui.close();
+                            }
+                        });
+                    }
+                }
+            });
+            if let Some(Job::Failed(e)) = job {
+                ui.horizontal_wrapped(|ui| {
+                    ui.label(RichText::new(e).color(ACCENT).small());
+                    if ui.small_button("OK").clicked() {
+                        actions.push(Action::Dismiss(app.id.clone()));
                     }
                 });
-            });
-        });
+            }
+        }
     }
 }
 

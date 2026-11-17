@@ -54,6 +54,51 @@ pub struct Release {
     pub build: u64,
     #[serde(default)]
     pub platforms: BTreeMap<String, Asset>,
+    /// Copy for the app's detail view (newer manifests only).
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub about: Option<About>,
+}
+
+#[derive(Clone, Debug, Default, Serialize, Deserialize)]
+pub struct About {
+    #[serde(default)]
+    pub pitch: String,
+    #[serde(default)]
+    pub intro: String,
+    #[serde(default)]
+    pub description: String,
+    #[serde(default)]
+    pub features: Vec<Feature>,
+    #[serde(default)]
+    pub screenshots: Vec<Screenshot>,
+    /// The app's page on rng.media.
+    #[serde(default)]
+    pub page: String,
+    /// Plain-text open-source credit.
+    #[serde(default)]
+    pub credit: String,
+    #[serde(default)]
+    pub licences: String,
+}
+
+#[derive(Clone, Debug, Default, Serialize, Deserialize)]
+pub struct Feature {
+    pub title: String,
+    #[serde(default)]
+    pub body: String,
+}
+
+#[derive(Clone, Debug, Default, Serialize, Deserialize)]
+pub struct Screenshot {
+    pub url: String,
+    #[serde(default)]
+    pub width: u32,
+    #[serde(default)]
+    pub height: u32,
+    #[serde(default)]
+    pub title: String,
+    #[serde(default)]
+    pub caption: String,
 }
 
 impl Release {
@@ -166,6 +211,29 @@ pub fn fetch_manifest() -> Result<(Manifest, Option<String>)> {
             None => Err(e),
         },
     }
+}
+
+/// A screenshot's bytes, from `<data>/screens` or downloaded (http) / read (path) and kept there,
+/// so the detail view still has its pictures offline.
+pub fn screenshot(url: &str) -> Result<Vec<u8>> {
+    let key = hex::encode(&Sha256::digest(url.as_bytes())[..12]);
+    let ext = url.rsplit('.').next().filter(|e| e.len() <= 4 && !e.contains('/')).unwrap_or("img");
+    let path = data_dir().join("screens").join(format!("{key}.{ext}"));
+    if let Ok(b) = fs::read(&path) {
+        return Ok(b);
+    }
+    let bytes = if url.starts_with("http") {
+        let mut r = agent().get(url).call().map_err(|e| e.to_string())?;
+        r.body_mut().with_config().limit(16 * 1024 * 1024).read_to_vec().map_err(|e| e.to_string())?
+    } else {
+        fs::read(url).map_err(|e| format!("{url}: {e}"))?
+    };
+    // Best effort: a failed write only means it's fetched again next time.
+    let tmp = path.with_extension(format!("{:?}.part", std::thread::current().id()).replace(['(', ')'], ""));
+    let _ = fs::create_dir_all(path.parent().unwrap());
+    let _ = fs::write(&tmp, &bytes).and_then(|_| fs::rename(&tmp, &path));
+    let _ = fs::remove_file(&tmp);
+    Ok(bytes)
 }
 
 /// Downloads `asset` into `dest_dir`, checking size and SHA-256. `progress(done, total)`.
