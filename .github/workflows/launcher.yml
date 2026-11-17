@@ -9,7 +9,7 @@ on:
     paths: ["launcher/**", ".github/workflows/launcher.yml"]
 
 permissions:
-  contents: write
+  contents: read
 
 env:
   CARGO_TERM_COLOR: always
@@ -31,8 +31,8 @@ jobs:
       run:
         shell: bash
     steps:
-      - uses: actions/checkout@v4
-      - uses: dtolnay/rust-toolchain@stable
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+      - uses: dtolnay/rust-toolchain@39008827e6b4319a349e9a42dfc90579dd25f1ca # stable
         with:
           targets: ${{ runner.os == 'macOS' && 'aarch64-apple-darwin,x86_64-apple-darwin' || '' }}
       - name: Hide build paths in the binaries
@@ -40,10 +40,11 @@ jobs:
           ws="$GITHUB_WORKSPACE"; ch="${CARGO_HOME:-$HOME/.cargo}"; rh="${RUSTUP_HOME:-$HOME/.rustup}"
           if [ "$RUNNER_OS" = Windows ]; then ws=$(cygpath -w "$ws"); ch=$(cygpath -w "$ch"); rh=$(cygpath -w "$rh"); fi
           echo "RUSTFLAGS=--remap-path-prefix=$ws=/build --remap-path-prefix=$ch=/cargo --remap-path-prefix=$rh=/rustup" >> "$GITHUB_ENV"
-      - uses: Swatinem/rust-cache@v2
+      - uses: Swatinem/rust-cache@d1527c8f67ef9af357290475d4af4b0fab8f12e0 # v2
         with:
           workspaces: launcher
           key: ${{ matrix.platform }}
+          save-if: ${{ github.ref == 'refs/heads/main' }}
       - name: Linux build deps
         if: runner.os == 'Linux'
         run: |
@@ -115,7 +116,7 @@ jobs:
               echo "RNG Studio.app" > "out/${{ matrix.platform }}.exe.txt" ;;
           esac
           ls -la out
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
         with:
           name: ${{ matrix.platform }}
           path: out/*
@@ -125,11 +126,13 @@ jobs:
     needs: build
     if: ${{ !cancelled() }}
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
     env:
       GH_TOKEN: ${{ github.token }}
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/download-artifact@v4
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+      - uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4
         with:
           path: dist
           merge-multiple: true
