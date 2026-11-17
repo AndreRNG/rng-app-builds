@@ -109,9 +109,16 @@ for t in sys.argv[5:]:
         m["apps"] = [x for x in m["apps"] if x["id"] != e["id"]] + [e]
         print("manifest:", e["id"], e["version"], "(extra)")
 m["apps"].sort(key=lambda x: order.index(x["id"]) if x["id"] in order else 99)
+apps = json.load(open(apps_path))
 for a in m["apps"]:
     if a["id"] in about:
         a["about"] = about[a["id"]]
+    # Renamed apps: their former ids, so RNG Studio carries existing installs over.
+    if apps.get(a["id"], {}).get("replaces"):
+        a["replaces"] = apps[a["id"]]["replaces"]
+# Entries under a former id are gone once the renamed app is published.
+former = {r["id"] for a in m["apps"] for r in a.get("replaces", [])}
+m["apps"] = [a for a in m["apps"] if a["id"] not in former]
 json.dump(m, open(man_path, "w"), indent=2)
 PY
 

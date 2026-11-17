@@ -2,6 +2,6 @@
   "cutcat": {"name": "CutCat", "tagline": "Video editor", "upstream": "storytold/filmcraft", "src": "~/src/filmcraft", "pkg": "filmcraft", "bin": "filmcraft", "wm_class": "media.rng.filmcraft"},
   "photofalcon": {"name": "PhotoFalcon", "tagline": "Photo editor", "upstream": "storytold/photocraft", "src": "~/src/photocraft", "pkg": "photocraft", "bin": "photocraft", "wm_class": "media.rng.photofalcon"},
   "pdfrog": {"name": "PDFrog", "tagline": "PDF editor", "upstream": "storytold/pdfcraft", "src": "~/src/pdfcraft", "pkg": "pdfcraft", "bin": "pdfcraft", "wm_class": "media.rng.pdfrog"},
-  "docdog": {"name": "DocDog", "tagline": "Word processor", "upstream": "storytold/wordcraft", "src": "~/src/wordcraft", "pkg": "wordcraft", "bin": "wordcraft", "wm_class": "media.rng.docdog"},
-  "deckduck": {"name": "DeckDuck", "tagline": "Slide decks", "upstream": "storytold/deckcraft", "src": "~/src/deckcraft", "pkg": "deckcraft", "bin": "deckcraft", "wm_class": "media.rng.deckduck"}
+  "docduck": {"name": "DocDuck", "tagline": "Word processor", "upstream": "storytold/wordcraft", "src": "~/src/wordcraft", "pkg": "wordcraft", "bin": "wordcraft", "wm_class": "media.rng.docduck", "replaces": [{"id": "docdog", "name": "DocDog"}]},
+  "slideseal": {"name": "SlideSeal", "tagline": "Slide decks", "upstream": "storytold/deckcraft", "src": "~/src/deckcraft", "pkg": "deckcraft", "bin": "deckcraft", "wm_class": "media.rng.slideseal", "replaces": [{"id": "deckduck", "name": "DeckDuck"}]}
 }

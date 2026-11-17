@@ -22,8 +22,8 @@ fn builtin_icon(id: &str) -> Option<&'static [u8]> {
         "cutcat" => include_bytes!("../assets/cutcat.png"),
         "photofalcon" => include_bytes!("../assets/photofalcon.png"),
         "pdfrog" => include_bytes!("../assets/pdfrog.png"),
-        "docdog" => include_bytes!("../assets/docdog.png"),
-        "deckduck" => include_bytes!("../assets/deckduck.png"),
+        "docduck" => include_bytes!("../assets/docduck.png"),
+        "slideseal" => include_bytes!("../assets/slideseal.png"),
         "studio" => include_bytes!("../assets/studio.png"),
         _ => return None,
     })
@@ -115,6 +115,7 @@ impl App {
                 s.loading = false;
                 match r {
                     Ok((m, note)) => {
+                        store::carry_over_renames(&mut s.state, &m);
                         store::shortcuts::migrate(&s.state.apps, &m);
                         urls = m.apps.iter().filter_map(|a| a.about.as_ref()).flat_map(|a| a.screenshots.iter().map(|x| x.url.clone())).collect();
                         s.manifest = Some(m);
@@ -854,6 +855,7 @@ fn cli(args: &[String]) -> Option<i32> {
         eprintln!("{n}");
     }
     let mut state = store::load_state();
+    store::carry_over_renames(&mut state, &m);
     for a in m.apps.iter().filter(|a| a.self_updating()) {
         if let Some(i) = a.detected() {
             state.apps.insert(a.id.clone(), i);

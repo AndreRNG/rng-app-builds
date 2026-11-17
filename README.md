@@ -1,6 +1,6 @@
 # rng-app-builds
 
-Cross-platform builds of RNG Media's app family (CutCat, PhotoFalcon, PDFrog, DocDog, DeckDuck) and the
+Cross-platform builds of RNG Media's app family (CutCat, PhotoFalcon, PDFrog, DocDuck, SlideSeal) and the
 RNG Studio launcher and its manifest.
 
 - `apps.json`: app id → upstream repo, cargo package, binary.

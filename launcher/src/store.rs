@@ -74,6 +74,39 @@ pub struct Release {
     /// Copy for the app's detail view (newer manifests only).
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub about: Option<About>,
+    /// Earlier ids and names of this app (it was renamed): installs recorded under them carry over.
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub replaces: Vec<Former>,
+}
+
+#[derive(Clone, Debug, Default, Serialize, Deserialize)]
+pub struct Former {
+    pub id: String,
+    #[serde(default)]
+    pub name: String,
+}
+
+/// Renamed apps: installs recorded under a former id move to the app's current id, and their
+/// menu / Start menu entry is rewritten under the new name. The files stay where they are until the
+/// next update. Returns true when the state changed (it is saved here).
+pub fn carry_over_renames(state: &mut State, manifest: &Manifest) -> bool {
+    let mut changed = false;
+    for app in &manifest.apps {
+        for old in &app.replaces {
+            if old.id == app.id || state.apps.contains_key(&app.id) {
+                continue;
+            }
+            let Some(i) = state.apps.remove(&old.id) else { continue };
+            shortcuts::remove_former(old);
+            shortcuts::create(app, &i);
+            state.apps.insert(app.id.clone(), i);
+            changed = true;
+        }
+    }
+    if changed {
+        let _ = save_state(state);
+    }
+    changed
 }
 
 #[derive(Clone, Debug, Default, Serialize, Deserialize)]
@@ -421,6 +454,14 @@ pub fn install(app: &Release, progress: &dyn Fn(u64, u64)) -> Result<Installed> 
     if let Some(p) = previous {
         if p.dir != dir {
             let _ = fs::remove_dir_all(&p.dir);
+            // A renamed app's folder under its former id is empty now.
+            if let Some(parent) = p.dir.parent().filter(|d| *d != dir.parent().unwrap()) {
+                let _ = fs::remove_dir(parent);
+            }
+        }
+        // macOS, renamed app: the bundle under its former name ("DocDog.app") goes.
+        if cfg!(target_os = "macos") && p.exe != installed.exe && p.exe.extension().is_some_and(|e| e == "app") {
+            let _ = fs::remove_dir_all(&p.exe);
         }
     }
     clean_stale(&app.id, &dir);
@@ -592,6 +633,13 @@ pub mod shortcuts {
         let _ = fs::remove_file(desktop_file(&app.id));
     }
 
+    /// The entry of a renamed app under its former id.
+    #[cfg(target_os = "linux")]
+    pub fn remove_former(old: &Former) {
+        let _ = fs::remove_file(desktop_file(&old.id));
+        let _ = fs::remove_file(dirs::data_dir().unwrap().join("icons/hicolor/512x512/apps").join(format!("media.rng.studio.{}.png", old.id)));
+    }
+
     #[cfg(windows)]
     fn lnk(name: &str) -> Option<PathBuf> {
         Some(dirs::data_dir()?.join("Microsoft\\Windows\\Start Menu\\Programs\\RNG Media").join(format!("{name}.lnk")))
@@ -614,10 +662,19 @@ pub mod shortcuts {
         }
     }
 
+    #[cfg(windows)]
+    pub fn remove_former(old: &Former) {
+        if let Some(l) = lnk(&old.name).filter(|_| !old.name.is_empty()) {
+            let _ = fs::remove_file(l);
+        }
+    }
+
     #[cfg(target_os = "macos")]
     pub fn create(_: &Release, _: &Installed) {}
     #[cfg(target_os = "macos")]
     pub fn remove(_: &Release) {}
+    #[cfg(target_os = "macos")]
+    pub fn remove_former(_: &Former) {}
 }
 
 /// Updates RNG Studio itself, then starts the new copy. Returns only on failure.

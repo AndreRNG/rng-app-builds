@@ -170,7 +170,7 @@
     "credit": "PDFrog is based on PdfCraft by the ArtCraft team, licensed MIT OR Apache-2.0, and modified by RNG Media S.L. RNG Media is not affiliated with or endorsed by the ArtCraft team.",
     "licences": "https://github.com/AndreRNG/rng-studio/tree/main/licences/pdfrog"
   },
-  "docdog": {
+  "docduck": {
     "pitch": "A word processor that just gets on with it.",
     "intro": "Write, format and review documents with the ribbon you already know. Reads and writes .docx, exports PDF, and works offline.",
     "description": "Ribbon tabs, styles, shortcuts and lists that behave the way you expect. Open a .docx from anyone, track changes and comments with your team, and send back a clean PDF. Spelling, grammar and everything else run on your computer.",
@@ -202,42 +202,42 @@
     ],
     "screenshots": [
       {
-        "url": "https://www.rng.media/images/apps/docdog/write.webp",
+        "url": "https://www.rng.media/images/apps/docduck/write.webp",
         "width": 1600,
         "height": 1000,
         "title": "Write",
         "caption": "The Home ribbon with fonts, paragraphs and a live styles gallery, around a real page."
       },
       {
-        "url": "https://www.rng.media/images/apps/docdog/review.webp",
+        "url": "https://www.rng.media/images/apps/docduck/review.webp",
         "width": 1600,
         "height": 1000,
         "title": "Review",
         "caption": "Track changes and comments, the way your team already works."
       },
       {
-        "url": "https://www.rng.media/images/apps/docdog/pages.webp",
+        "url": "https://www.rng.media/images/apps/docduck/pages.webp",
         "width": 1600,
         "height": 1000,
         "title": "Lay it out",
         "caption": "Multiple pages at once, with headings in the Navigation pane."
       },
       {
-        "url": "https://www.rng.media/images/apps/docdog/read.webp",
+        "url": "https://www.rng.media/images/apps/docduck/read.webp",
         "width": 1600,
         "height": 1000,
         "title": "Read",
         "caption": "Read mode reflows the document into easy columns for reading on screen."
       }
     ],
-    "page": "https://www.rng.media/docdog",
-    "credit": "DocDog is based on WordCraft by the ArtCraft team, licensed MIT OR Apache-2.0, and modified by RNG Media S.L. RNG Media is not affiliated with or endorsed by the ArtCraft team.",
-    "licences": "https://github.com/AndreRNG/rng-studio/tree/main/licences/docdog"
+    "page": "https://www.rng.media/docduck",
+    "credit": "DocDuck is based on WordCraft by the ArtCraft team, licensed MIT OR Apache-2.0, and modified by RNG Media S.L. RNG Media is not affiliated with or endorsed by the ArtCraft team.",
+    "licences": "https://github.com/AndreRNG/rng-studio/tree/main/licences/docduck"
   },
-  "deckduck": {
+  "slideseal": {
     "pitch": "Slides that look good, fast.",
     "intro": "Build a deck with themes, shapes, charts and transitions, then present it full screen with presenter view. Opens and saves PowerPoint files.",
-    "description": "Pick a theme, drop in your content and DeckDuck keeps it all on brand: masters, layouts, colour and font schemes. Animate what matters, rehearse your timings and present with your notes in front of you. Send it on as .pptx, PDF or an animated GIF.",
+    "description": "Pick a theme, drop in your content and SlideSeal keeps it all on brand: masters, layouts, colour and font schemes. Animate what matters, rehearse your timings and present with your notes in front of you. Send it on as .pptx, PDF or an animated GIF.",
     "features": [
       {
         "title": "Themes and layouts",
@@ -266,36 +266,36 @@
     ],
     "screenshots": [
       {
-        "url": "https://www.rng.media/images/apps/deckduck/edit.webp",
+        "url": "https://www.rng.media/images/apps/slideseal/edit.webp",
         "width": 1600,
         "height": 1000,
         "title": "Build it",
         "caption": "Slides grouped into sections, speaker notes underneath, the ribbon on top."
       },
       {
-        "url": "https://www.rng.media/images/apps/deckduck/format.webp",
+        "url": "https://www.rng.media/images/apps/slideseal/format.webp",
         "width": 1600,
         "height": 1000,
         "title": "Shape it",
         "caption": "Select a shape and the Shape Format tab and Format pane give you fills, lines and effects."
       },
       {
-        "url": "https://www.rng.media/images/apps/deckduck/transitions.webp",
+        "url": "https://www.rng.media/images/apps/slideseal/transitions.webp",
         "width": 1600,
         "height": 1000,
         "title": "Move it",
         "caption": "Transitions on the ribbon, animations in their own pane, a native chart on the slide."
       },
       {
-        "url": "https://www.rng.media/images/apps/deckduck/sorter.webp",
+        "url": "https://www.rng.media/images/apps/slideseal/sorter.webp",
         "width": 1600,
         "height": 1000,
         "title": "See it all",
         "caption": "Slide Sorter shows the whole story, section by section, with each slide’s transition."
       }
     ],
-    "page": "https://www.rng.media/deckduck",
-    "credit": "DeckDuck is based on DeckCraft by the ArtCraft team, licensed MIT OR Apache-2.0, and modified by RNG Media S.L. RNG Media is not affiliated with or endorsed by the ArtCraft team.",
-    "licences": "https://github.com/AndreRNG/rng-studio/tree/main/licences/deckduck"
+    "page": "https://www.rng.media/slideseal",
+    "credit": "SlideSeal is based on DeckCraft by the ArtCraft team, licensed MIT OR Apache-2.0, and modified by RNG Media S.L. RNG Media is not affiliated with or endorsed by the ArtCraft team.",
+    "licences": "https://github.com/AndreRNG/rng-studio/tree/main/licences/slideseal"
   }
 }

@@ -9,7 +9,7 @@ on:
       app:
         description: "App id from apps.json"
         type: choice
-        options: [cutcat, photofalcon, pdfrog, docdog, deckduck]
+        options: [cutcat, photofalcon, pdfrog, docduck, slideseal]
 
 permissions:
   contents: write

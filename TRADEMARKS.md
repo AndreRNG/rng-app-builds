@@ -1,6 +1,6 @@
 # Names and icons
 
-CutCat, PhotoFalcon, PDFrog, DocDog, DeckDuck, RNG Studio and RNG Media, and their icons
+CutCat, PhotoFalcon, PDFrog, DocDuck, SlideSeal, RNG Studio and RNG Media, and their icons
 (`icons/`, `launcher/assets/*.png`, `launcher/assets/*.ico` and the icon files inside the patches),
 are © RNG Media S.L. They are **not** covered by any open-source licence in this repository or in
 the upstream projects. Don't use them for your own builds or products.
