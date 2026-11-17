@@ -4,5 +4,6 @@
   "pdfrog": {"name": "PDFrog", "tagline": "PDF editor", "upstream": "storytold/pdfcraft", "src": "~/src/pdfcraft", "pkg": "pdfcraft", "bin": "pdfcraft", "wm_class": "media.rng.pdfrog"},
   "docduck": {"name": "DocDuck", "tagline": "Word processor", "upstream": "storytold/wordcraft", "src": "~/src/wordcraft", "pkg": "wordcraft", "bin": "wordcraft", "wm_class": "media.rng.docduck", "replaces": [{"id": "docdog", "name": "DocDog"}]},
   "slideseal": {"name": "SlideSeal", "tagline": "Slide decks", "upstream": "storytold/deckcraft", "src": "~/src/deckcraft", "pkg": "deckcraft", "bin": "deckcraft", "wm_class": "media.rng.slideseal", "replaces": [{"id": "deckduck", "name": "DeckDuck"}]},
-  "vectorviper": {"name": "VectorViper", "tagline": "Vector editor", "upstream": "storytold/vectorcraft", "src": "~/src/vectorcraft", "pkg": "vectorcraft", "bin": "vectorcraft", "wm_class": "media.rng.vectorviper"}
+  "vectorviper": {"name": "VectorViper", "tagline": "Vector editor", "upstream": "storytold/vectorcraft", "src": "~/src/vectorcraft", "pkg": "vectorcraft", "bin": "vectorcraft", "wm_class": "media.rng.vectorviper"},
+  "effectopus": {"name": "Effectopus", "tagline": "Motion graphics", "upstream": "storytold/effectcraft", "src": "~/src/effectcraft", "pkg": "effectcraft", "bin": "effectcraft", "wm_class": "media.rng.effectopus"}
 }
