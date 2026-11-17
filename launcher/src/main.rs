@@ -1,5 +1,5 @@
 #![cfg_attr(windows, windows_subsystem = "windows")]
-//! LaunchLlama: one window that installs, opens and updates RNG Media's apps.
+//! RNG Studio: one window that installs, opens and updates RNG Media's apps.
 
 mod store;
 
@@ -8,7 +8,7 @@ use std::collections::HashMap;
 use std::sync::{Arc, Mutex};
 use store::{Installed, Manifest, Release, State};
 
-pub const ICON_BIG: &[u8] = include_bytes!("../assets/launchllama.png");
+pub const ICON_BIG: &[u8] = include_bytes!("../assets/studio.png");
 
 const ACCENT: Color32 = Color32::from_rgb(0xff, 0x45, 0x3a);
 const GOLD: Color32 = Color32::from_rgb(0xe8, 0xb8, 0x5c);
@@ -24,7 +24,7 @@ fn builtin_icon(id: &str) -> Option<&'static [u8]> {
         "pdfrog" => include_bytes!("../assets/pdfrog.png"),
         "docdog" => include_bytes!("../assets/docdog.png"),
         "deckduck" => include_bytes!("../assets/deckduck.png"),
-        "launchllama" => include_bytes!("../assets/launchllama.png"),
+        "studio" => include_bytes!("../assets/studio.png"),
         _ => return None,
     })
 }
@@ -75,6 +75,7 @@ impl App {
             s.loading = false;
             match r {
                 Ok((m, note)) => {
+                    store::shortcuts::migrate(&s.state.apps, &m);
                     s.manifest = Some(m);
                     s.note = note;
                 }
@@ -131,15 +132,15 @@ impl App {
     fn self_update(&self, ctx: &egui::Context, rel: Release) {
         let shared = self.shared.clone();
         let ctx = ctx.clone();
-        shared.lock().unwrap().jobs.insert("launchllama".into(), Job::Busy { label: "Updating LaunchLlama…".into(), frac: Some(0.0) });
+        shared.lock().unwrap().jobs.insert("studio".into(), Job::Busy { label: "Updating RNG Studio…".into(), frac: Some(0.0) });
         std::thread::spawn(move || {
             let progress = |done: u64, total: u64| {
                 let f = if total > 0 { done as f32 / total as f32 } else { 0.0 };
-                shared.lock().unwrap().jobs.insert("launchllama".into(), Job::Busy { label: format!("Updating LaunchLlama… {}", mb(done)), frac: Some(f) });
+                shared.lock().unwrap().jobs.insert("studio".into(), Job::Busy { label: format!("Updating RNG Studio… {}", mb(done)), frac: Some(f) });
                 ctx.request_repaint();
             };
             if let Err(e) = store::self_update(&rel, &progress) {
-                shared.lock().unwrap().jobs.insert("launchllama".into(), Job::Failed(format!("LaunchLlama update failed: {e}")));
+                shared.lock().unwrap().jobs.insert("studio".into(), Job::Failed(format!("RNG Studio update failed: {e}")));
                 ctx.request_repaint();
             }
         });
@@ -249,12 +250,12 @@ impl eframe::App for App {
         egui::Frame::new().inner_margin(Margin::symmetric(26, 22)).show(ui, |ui| {
             // Header
             ui.horizontal(|ui| {
-                if let Some(t) = self.icon(&ctx, "launchllama") {
+                if let Some(t) = self.icon(&ctx, "studio") {
                     ui.add(egui::Image::new(&t).fit_to_exact_size(Vec2::splat(46.0)));
                 }
                 ui.vertical(|ui| {
                     ui.add_space(2.0);
-                    ui.label(RichText::new("LaunchLlama").font(FontId::proportional(24.0)).strong());
+                    ui.label(RichText::new("RNG Studio").font(FontId::proportional(24.0)).strong());
                     ui.label(RichText::new("RNG Media apps").color(DIM));
                 });
                 ui.with_layout(egui::Layout::right_to_left(egui::Align::Center), |ui| {
@@ -268,12 +269,12 @@ impl eframe::App for App {
             });
             ui.add_space(14.0);
 
-            // LaunchLlama's own update
+            // RNG Studio's own update
             if let Some(rel) = manifest.as_ref().and_then(|m| m.launcher.clone()).filter(|l| l.build > store::BUILD && l.asset().is_some()) {
                 glass_frame().stroke(Stroke::new(1.0, ACCENT.gamma_multiply(0.6))).show(ui, |ui| {
                     ui.set_width(ui.available_width());
                     ui.horizontal(|ui| {
-                        match jobs.get("launchllama") {
+                        match jobs.get("studio") {
                             Some(Job::Busy { label, frac }) => {
                                 ui.add(egui::ProgressBar::new(frac.unwrap_or(0.0)).text(label.clone()).fill(ACCENT));
                             }
@@ -281,7 +282,7 @@ impl eframe::App for App {
                                 if let Some(Job::Failed(e)) = other {
                                     ui.colored_label(ACCENT, e);
                                 } else {
-                                    ui.label(format!("A new LaunchLlama is ready (v{}).", rel.version));
+                                    ui.label(format!("A new RNG Studio is ready (v{}).", rel.version));
                                 }
                                 ui.with_layout(egui::Layout::right_to_left(egui::Align::Center), |ui| {
                                     if accent_button(ui, "Update and restart").clicked() {
@@ -331,7 +332,7 @@ impl eframe::App for App {
                         if ui.link(RichText::new("About & licences").small()).clicked() {
                             self.show_about = true;
                         }
-                        ui.label(RichText::new(format!("LaunchLlama {} · build {}", store::VERSION, store::BUILD)).color(DIM).small());
+                        ui.label(RichText::new(format!("RNG Studio {} · build {}", store::VERSION, store::BUILD)).color(DIM).small());
                     });
                 });
             });
@@ -339,16 +340,16 @@ impl eframe::App for App {
 
         if self.show_about {
             let mut open = true;
-            egui::Window::new("About LaunchLlama")
+            egui::Window::new("About RNG Studio")
                 .open(&mut open)
                 .collapsible(false)
                 .default_size([560.0, 440.0])
                 .show(&ctx, |ui| {
-                    ui.label(RichText::new(format!("LaunchLlama {} (build {})", store::VERSION, store::BUILD)).strong());
-                    ui.label("© RNG Media S.L. Installs, opens and updates RNG Media's apps. It contacts only www.rng.media and github.com/AndreRNG/launchllama, to read the app list and download apps.");
+                    ui.label(RichText::new(format!("RNG Studio {} (build {})", store::VERSION, store::BUILD)).strong());
+                    ui.label("© RNG Media S.L. Installs, opens and updates RNG Media's apps. It contacts only www.rng.media and github.com/AndreRNG/rng-studio, to read the app list and download apps.");
                     ui.label(RichText::new("The apps it installs are based on open-source projects (MIT OR Apache-2.0); each one includes its own licence, notices and credits in its About screen and install folder.").color(DIM));
                     ui.add_space(6.0);
-                    ui.label(RichText::new("Open-source components in LaunchLlama").strong());
+                    ui.label(RichText::new("Open-source components in RNG Studio").strong());
                     // ~10k lines: lay out only the rows on screen.
                     static LINES: std::sync::OnceLock<Vec<&'static str>> = std::sync::OnceLock::new();
                     let lines = LINES.get_or_init(|| THIRD_PARTY.lines().collect());
@@ -490,7 +491,7 @@ impl App {
     }
 }
 
-/// `launchllama --install <id>` / `--list`: the same work without a window (scripts, tests).
+/// `rng-studio --install <id>` / `--list`: the same work without a window (scripts, tests).
 fn cli(args: &[String]) -> Option<i32> {
     let (m, note) = match store::fetch_manifest() {
         Ok(x) => x,
@@ -543,13 +544,13 @@ fn main() -> eframe::Result {
         return Ok(());
     }
     let mut viewport = egui::ViewportBuilder::default()
-        .with_title("LaunchLlama")
+        .with_title("RNG Studio")
         .with_inner_size([840.0, 560.0])
         .with_min_inner_size([440.0, 360.0])
-        .with_app_id("media.rng.launchllama");
+        .with_app_id("media.rng.studio");
     if let Ok(icon) = eframe::icon_data::from_png_bytes(ICON_BIG) {
         viewport = viewport.with_icon(icon);
     }
     let options = eframe::NativeOptions { viewport, renderer: eframe::Renderer::Glow, ..Default::default() };
-    eframe::run_native("LaunchLlama", options, Box::new(|cc| Ok(Box::new(App::new(cc)))))
+    eframe::run_native("RNG Studio", options, Box::new(|cc| Ok(Box::new(App::new(cc)))))
 }

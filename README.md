@@ -1,7 +1,7 @@
 # rng-app-builds
 
 Cross-platform builds of RNG Media's app family (CutCat, PhotoFalcon, PDFrog, DocDog, DeckDuck) and the
-LaunchLlama manifest.
+RNG Studio launcher and its manifest.
 
 - `apps.json`: app id → upstream repo, cargo package, binary.
 - `patches/<app>.patch` + `.base`: the `rng` branch from `~/src/<repo>` as one patch on an upstream commit.

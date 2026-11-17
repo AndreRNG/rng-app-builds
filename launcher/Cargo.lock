@@ -1557,27 +1557,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "launchllama"
-version = "0.1.0"
-dependencies = [
- "dirs",
- "eframe",
- "egui",
- "flate2",
- "hex",
- "image",
- "mslnk",
- "self-replace",
- "serde",
- "serde_json",
- "sha2",
- "tar",
- "ureq",
- "winresource",
- "zip",
-]
-
-[[package]]
 name = "libc"
 version = "0.2.191"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -2496,6 +2475,27 @@ dependencies = [
  "libc",
  "untrusted",
  "windows-sys 0.52.0",
+]
+
+[[package]]
+name = "rng-studio"
+version = "0.1.0"
+dependencies = [
+ "dirs",
+ "eframe",
+ "egui",
+ "flate2",
+ "hex",
+ "image",
+ "mslnk",
+ "self-replace",
+ "serde",
+ "serde_json",
+ "sha2",
+ "tar",
+ "ureq",
+ "winresource",
+ "zip",
 ]
 
 [[package]]

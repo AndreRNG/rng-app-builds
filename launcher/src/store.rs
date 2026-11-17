@@ -9,7 +9,7 @@ use std::path::{Path, PathBuf};
 use std::time::Duration;
 
 pub const MANIFEST_URL: &str = "https://www.rng.media/apps/manifest.json";
-pub const BUILD: u64 = match option_env!("LAUNCHLLAMA_BUILD") {
+pub const BUILD: u64 = match option_env!("RNG_STUDIO_BUILD") {
     Some(s) => parse_u64(s),
     None => 0,
 };
@@ -103,8 +103,16 @@ pub fn platform_keys() -> &'static [&'static str] {
     }
 }
 
+/// `<local data>/RNG Studio`. Installs made while the app was called LaunchLlama keep their
+/// `LaunchLlama` folder (it may hold the running program and open apps, so it is never moved).
 pub fn data_dir() -> PathBuf {
-    dirs::data_local_dir().unwrap_or_else(std::env::temp_dir).join("LaunchLlama")
+    let base = dirs::data_local_dir().unwrap_or_else(std::env::temp_dir);
+    let legacy = base.join("LaunchLlama");
+    if legacy.exists() {
+        legacy
+    } else {
+        base.join("RNG Studio")
+    }
 }
 
 fn state_path() -> PathBuf {
@@ -129,15 +137,15 @@ fn write_atomic(path: &Path, bytes: &[u8]) -> Result<()> {
 fn agent() -> ureq::Agent {
     ureq::Agent::config_builder()
         .timeout_connect(Some(Duration::from_secs(15)))
-        .user_agent(format!("LaunchLlama/{VERSION}"))
+        .user_agent(format!("RNGStudio/{VERSION}"))
         .build()
         .into()
 }
 
-/// Reads the manifest from `LAUNCHLLAMA_MANIFEST` (URL or file path) or rng.media.
+/// Reads the manifest from `RNG_STUDIO_MANIFEST` (URL or file path) or rng.media.
 /// A good copy is cached so the window still lists the apps offline.
 pub fn fetch_manifest() -> Result<(Manifest, Option<String>)> {
-    let src = std::env::var("LAUNCHLLAMA_MANIFEST").unwrap_or_else(|_| MANIFEST_URL.into());
+    let src = std::env::var("RNG_STUDIO_MANIFEST").unwrap_or_else(|_| MANIFEST_URL.into());
     let cache = data_dir().join("manifest.json");
     let fetched: Result<String> = if src.starts_with("http") {
         agent()
@@ -203,7 +211,7 @@ pub fn extract(archive: &Path, dest: &Path) -> Result<()> {
     let f = fs::File::open(archive).map_err(|e| e.to_string())?;
     let name = archive.to_string_lossy();
     if !(name.ends_with(".tar.gz") || name.ends_with(".tgz") || name.ends_with(".zip")) {
-        // A bare program (LaunchLlama.exe): nothing to unpack.
+        // A bare program (RNG Studio.exe): nothing to unpack.
         drop(f);
         let out = dest.join(archive.file_name().unwrap());
         fs::copy(archive, &out).map_err(|e| e.to_string())?;
@@ -357,13 +365,31 @@ pub mod shortcuts {
 
     #[cfg(target_os = "linux")]
     fn desktop_file(id: &str) -> PathBuf {
-        dirs::data_dir().unwrap().join("applications").join(format!("media.rng.launchllama.{id}.desktop"))
+        dirs::data_dir().unwrap().join("applications").join(format!("media.rng.studio.{id}.desktop"))
     }
+
+    /// Menu entries written before the rename (media.rng.launchllama.*): rewritten under the new name.
+    #[cfg(target_os = "linux")]
+    pub fn migrate(apps: &std::collections::BTreeMap<String, Installed>, manifest: &Manifest) {
+        let dir = dirs::data_dir().unwrap();
+        for (id, i) in apps {
+            let old = dir.join("applications").join(format!("media.rng.launchllama.{id}.desktop"));
+            if old.exists() {
+                if let Some(app) = manifest.apps.iter().find(|a| &a.id == id) {
+                    create(app, i);
+                    let _ = fs::remove_file(old);
+                    let _ = fs::remove_file(dir.join("icons/hicolor/512x512/apps").join(format!("media.rng.launchllama.{id}.png")));
+                }
+            }
+        }
+    }
+    #[cfg(not(target_os = "linux"))]
+    pub fn migrate(_: &std::collections::BTreeMap<String, Installed>, _: &Manifest) {}
 
     #[cfg(target_os = "linux")]
     pub fn create(app: &Release, i: &Installed) {
         let icon_src = i.exe.parent().map(|p| p.join("icon.png"));
-        let icon = dirs::data_dir().unwrap().join("icons/hicolor/512x512/apps").join(format!("media.rng.launchllama.{}.png", app.id));
+        let icon = dirs::data_dir().unwrap().join("icons/hicolor/512x512/apps").join(format!("media.rng.studio.{}.png", app.id));
         if let Some(src) = icon_src.filter(|p| p.exists()) {
             let _ = fs::create_dir_all(icon.parent().unwrap());
             let _ = fs::copy(src, &icon);
@@ -412,7 +438,7 @@ pub mod shortcuts {
     pub fn remove(_: &Release) {}
 }
 
-/// Updates LaunchLlama itself, then starts the new copy. Returns only on failure.
+/// Updates RNG Studio itself, then starts the new copy. Returns only on failure.
 pub fn self_update(rel: &Release, progress: &dyn Fn(u64, u64)) -> Result<()> {
     let asset = rel.asset().ok_or("no update for this computer")?;
     let work = data_dir().join("self-update");
@@ -425,18 +451,20 @@ pub fn self_update(rel: &Release, progress: &dyn Fn(u64, u64)) -> Result<()> {
 
     #[cfg(target_os = "macos")]
     {
-        // Swap the whole bundle: .../LaunchLlama.app/Contents/MacOS/launchllama
+        // Swap the whole bundle: .../RNG Studio.app/Contents/MacOS/rng-studio. The new bundle takes
+        // its own name, so an old "LaunchLlama.app" becomes "RNG Studio.app".
         let bundle = me.ancestors().nth(3).ok_or("can't find the app bundle")?.to_path_buf();
         if bundle.extension().is_some_and(|e| e == "app") {
+            let target = bundle.with_file_name(new.file_name().ok_or("bad update")?);
             let old = bundle.with_extension("app.old");
             let _ = fs::remove_dir_all(&old);
             fs::rename(&bundle, &old).map_err(|e| e.to_string())?;
-            if let Err(e) = fs::rename(&new, &bundle) {
+            if let Err(e) = fs::rename(&new, &target) {
                 let _ = fs::rename(&old, &bundle);
                 return Err(e.to_string());
             }
             let _ = fs::remove_dir_all(&old);
-            let _ = std::process::Command::new("open").arg("-n").arg(&bundle).spawn();
+            let _ = std::process::Command::new("open").arg("-n").arg(&target).spawn();
             std::process::exit(0);
         }
         let inner = new.join("Contents/MacOS").join(me.file_name().unwrap());
@@ -450,19 +478,19 @@ pub fn self_update(rel: &Release, progress: &dyn Fn(u64, u64)) -> Result<()> {
     std::process::exit(0);
 }
 
-/// Linux and Windows: the first run from a download copies LaunchLlama into its own folder and
+/// Linux and Windows: the first run from a download copies RNG Studio into its own folder and
 /// adds a menu entry, then runs from there. Returns true when this process should exit.
 pub fn self_install() -> bool {
     #[cfg(any(target_os = "linux", windows))]
     {
-        if std::env::var_os("LAUNCHLLAMA_NO_INSTALL").is_some() {
+        if std::env::var_os("RNG_STUDIO_NO_INSTALL").is_some() {
             return false;
         }
         let Ok(me) = std::env::current_exe() else { return false };
         let home = data_dir().join("bin");
-        let target = home.join(if cfg!(windows) { "LaunchLlama.exe" } else { "launchllama" });
+        let target = home.join(if cfg!(windows) { "RNG Studio.exe" } else { "rng-studio" });
         if me.starts_with(&home) {
-            write_own_shortcut(&target);
+            write_own_shortcut(&me);
             return false;
         }
         if fs::create_dir_all(&home).is_err() {
@@ -486,16 +514,20 @@ pub fn self_install() -> bool {
 
 #[cfg(target_os = "linux")]
 fn write_own_shortcut(exe: &Path) {
-    let icon = dirs::data_dir().unwrap().join("icons/hicolor/512x512/apps/media.rng.launchllama.png");
-    if !icon.exists() {
+    let share = dirs::data_dir().unwrap();
+    let icon = share.join("icons/hicolor/512x512/apps/media.rng.studio.png");
+    if fs::read(&icon).ok().as_deref() != Some(crate::ICON_BIG) {
         let _ = fs::create_dir_all(icon.parent().unwrap());
         let _ = fs::write(&icon, crate::ICON_BIG);
     }
+    // Pre-rename entry and icon.
+    let _ = fs::remove_file(share.join("applications/media.rng.launchllama.desktop"));
+    let _ = fs::remove_file(share.join("icons/hicolor/512x512/apps/media.rng.launchllama.png"));
     let entry = format!(
-        "[Desktop Entry]\nType=Application\nName=LaunchLlama\nComment=Install, open and update RNG Media apps\nExec=\"{}\"\nIcon=media.rng.launchllama\nTerminal=false\nCategories=Utility;\nStartupWMClass=media.rng.launchllama\n",
+        "[Desktop Entry]\nType=Application\nName=RNG Studio\nComment=Install, open and update RNG Media apps\nExec=\"{}\"\nIcon=media.rng.studio\nTerminal=false\nCategories=Utility;\nStartupWMClass=media.rng.studio\n",
         exe.display()
     );
-    let path = dirs::data_dir().unwrap().join("applications/media.rng.launchllama.desktop");
+    let path = share.join("applications/media.rng.studio.desktop");
     if fs::read_to_string(&path).ok().as_deref() != Some(entry.as_str()) {
         let _ = write_atomic(&path, entry.as_bytes());
     }
@@ -504,7 +536,8 @@ fn write_own_shortcut(exe: &Path) {
 #[cfg(windows)]
 fn write_own_shortcut(exe: &Path) {
     if let Some(dir) = dirs::data_dir().map(|d| d.join("Microsoft\\Windows\\Start Menu\\Programs\\RNG Media")) {
-        let l = dir.join("LaunchLlama.lnk");
+        let _ = fs::remove_file(dir.join("LaunchLlama.lnk"));
+        let l = dir.join("RNG Studio.lnk");
         if !l.exists() {
             let _ = fs::create_dir_all(&dir);
             if let Ok(s) = mslnk::ShellLink::new(exe) {

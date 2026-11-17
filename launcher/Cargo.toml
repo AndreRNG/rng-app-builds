@@ -1,8 +1,8 @@
 [package]
-name = "launchllama"
+name = "rng-studio"
 version = "0.1.0"
 edition = "2021"
-description = "LaunchLlama: installs, opens and updates RNG Media's apps"
+description = "RNG Studio: installs, opens and updates RNG Media's apps"
 license = "LicenseRef-RNG-Media"
 publish = false
 

@@ -1,6 +1,6 @@
-LaunchLlama (c) RNG Media S.L.
+RNG Studio (c) RNG Media S.L.
 
-LaunchLlama is built with the open-source components below. Each is used under the licence shown; their copyright and licence texts follow.
+RNG Studio is built with the open-source components below. Each is used under the licence shown; their copyright and licence texts follow.
 
 ==============================================================================
 accesskit 0.25.2  (MIT OR Apache-2.0)

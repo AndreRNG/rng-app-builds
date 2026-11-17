@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Writes launcher/assets/THIRD-PARTY.txt: every crate LaunchLlama links on any platform, with
+"""Writes launcher/assets/THIRD-PARTY.txt: every crate RNG Studio links on any platform, with
 its licence and the licence/notice files it ships. Run after changing launcher dependencies."""
 import glob, json, os, subprocess, sys
 root = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "launcher")
@@ -12,7 +12,7 @@ for t in ("x86_64-unknown-linux-gnu", "x86_64-pc-windows-msvc", "aarch64-apple-d
 texts = {}
 bad, out = [], []
 for p in sorted(meta["packages"], key=lambda p: p["name"]):
-    if p["name"] == "launchllama" or f"{p['name']} v{p['version']}" not in shipped:
+    if p["name"] == "rng-studio" or f"{p['name']} v{p['version']}" not in shipped:
         continue
     lic = p.get("license") or "SEE LICENSE FILE"
     if any(x in lic for x in ("GPL", "AGPL", "NC")) and "OR" not in lic:
@@ -32,7 +32,7 @@ for p in sorted(meta["packages"], key=lambda p: p["name"]):
         else:
             texts[t] = f"{p['name']} {os.path.basename(f)}"
             out.append(f"--- {os.path.basename(f)}\n{t}\n")
-head = ("LaunchLlama (c) RNG Media S.L.\n\nLaunchLlama is built with the open-source components below. "
+head = ("RNG Studio (c) RNG Media S.L.\n\nRNG Studio is built with the open-source components below. "
         "Each is used under the licence shown; their copyright and licence texts follow.\n\n")
 open(os.path.join(root, "assets", "THIRD-PARTY.txt"), "w").write(head + "\n".join(out))
 print(len(out), "components;", "flags:", bad or "none")

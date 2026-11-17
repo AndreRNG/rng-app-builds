@@ -1,14 +1,14 @@
 #!/usr/bin/env bash
 # publish.sh <tag>... : copy finished builds from the private repo's releases to the PUBLIC
-# AndreRNG/launchllama releases and rewrite its manifest.json (what LaunchLlama reads through
-# www.rng.media/apps/manifest.json). Tags look like cutcat-b12 or launchllama-b7; "latest" = the
+# AndreRNG/rng-studio releases and rewrite its manifest.json (what RNG Studio reads through
+# www.rng.media/apps/manifest.json). Tags look like cutcat-b12 or studio-b7; "latest" = the
 # newest release of every app and the launcher.
 set -euo pipefail
 PRIV=AndreRNG/rng-app-builds  # public now; name kept
-PUB=AndreRNG/launchllama
+PUB=AndreRNG/rng-studio
 here=$(cd "$(dirname "$0")/.." && pwd)
-work=~/RNG/work/launchllama-publish
-pubdir=~/src/launchllama-public
+work=~/RNG/work/studio-publish
+pubdir=~/src/rng-studio-public
 mkdir -p "$work"
 [ -d "$pubdir/.git" ] || gh repo clone "$PUB" "$pubdir"
 git -C "$pubdir" pull -q --ff-only
@@ -39,15 +39,15 @@ for p, a in meta["platforms"].items():
     assert h == a["sha256"], f"{a['file']}: checksum mismatch"
 print("checksums ok:", ", ".join(meta["platforms"]))
 PY
-  latest=false; [ "$id" = launchllama ] && latest=true
+  latest=false; [ "$id" = studio ] && latest=true
   files=$(cd "$d" && ls | grep -v '\.json$' | sed "s|^|$d/|")
-  if [ "$id" = launchllama ]; then
-    # Stable names so www.rng.media/launchllama links never change.
+  if [ "$id" = studio ]; then
+    # Stable names so the www.rng.media/studio download links never change.
     for f in $files; do
       case $f in
-        *-linux-x86_64.tar.gz) cp "$f" "$d/LaunchLlama-linux-x86_64.tar.gz" ;;
-        *-windows-x86_64.exe)  cp "$f" "$d/LaunchLlama-windows.exe" ;;
-        *-macos.dmg)           cp "$f" "$d/LaunchLlama-mac.dmg" ;;
+        *-linux-x86_64.tar.gz) cp "$f" "$d/RNG-Studio-linux-x86_64.tar.gz" ;;
+        *-windows-x86_64.exe)  cp "$f" "$d/RNG-Studio-windows.exe" ;;
+        *-macos.dmg)           cp "$f" "$d/RNG-Studio-mac.dmg" ;;
       esac
     done
     files=$(cd "$d" && ls | grep -v '\.json$' | sed "s|^|$d/|")
@@ -57,7 +57,7 @@ PY
   else
     title=$(python3 -c 'import json,sys;m=json.load(open(sys.argv[1]));print(m["name"], m["version"], "(build %s)" % m["build"])' "$d/$id.json")
     gh release create "$tag" -R "$PUB" --title "$title" --latest=$latest \
-      --notes "Install and update with LaunchLlama: https://www.rng.media/launchllama" $files
+      --notes "Install and update with RNG Studio: https://www.rng.media/studio" $files
   fi
   python3 - "$d/$id.json" "$pubdir/manifest.json" "$tag" "$PUB" "$here/apps.json" <<'PY'
 import json, os, sys
@@ -68,7 +68,7 @@ m = json.load(open(man_path)) if os.path.exists(man_path) else {"schema": 1, "la
 for a in e["platforms"].values():
     a["url"] = f"https://github.com/{pub}/releases/download/{tag}/{a.pop('file')}"
 e.pop("upstream_commit", None)
-if e["id"] == "launchllama":
+if e["id"] in ("studio", "launchllama"):
     m["launcher"] = e
 else:
     m["apps"] = [x for x in m["apps"] if x["id"] != e["id"]] + [e]
@@ -82,7 +82,7 @@ done
 for tag in "${tags[@]}"; do
   id=${tag%-b*}
   dst="$pubdir/licences/$id"; rm -rf "$dst"; mkdir -p "$dst"
-  if [ "$id" = launchllama ]; then
+  if [ "$id" = studio ]; then
     cp "$here/launcher/assets/THIRD-PARTY.txt" "$dst/"
   else
     src=$(python3 -c "import json,os,sys;print(os.path.expanduser(json.load(open(sys.argv[1]))[sys.argv[2]]['src']))" "$here/apps.json" "$id")
