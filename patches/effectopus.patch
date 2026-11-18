@@ -1,7 +1,7 @@
 From 5337a7f24759b417270101e348f3c0c90c4c768f Mon Sep 17 00:00:00 2001
 From: Andre <andre@rng.media>
 Date: Tue, 17 Nov 2026 23:25:01 +0100
-Subject: [PATCH 1/3] Effectopus: RNG Media rebrand of EffectCraft (name, app
+Subject: [PATCH 1/4] Effectopus: RNG Media rebrand of EffectCraft (name, app
  id, icon, no update checks, licences)
 
 Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>
@@ -136691,7 +136691,7 @@ index e3aab07a..789d0231 100644
 From 3451517aca9683b3685cecb6c06182126ea539d3 Mon Sep 17 00:00:00 2001
 From: Andre <andre@rng.media>
 Date: Wed, 18 Nov 2026 00:49:53 +0100
-Subject: [PATCH 2/3] Effectopus: demo title, quiet the unplugged updater
+Subject: [PATCH 2/4] Effectopus: demo title, quiet the unplugged updater
 
 Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>
 ---
@@ -136780,7 +136780,7 @@ index c3f55645..aca8a0ca 100644
 From 89db078b5467885e994983eaed5daeaabbdcd8ee Mon Sep 17 00:00:00 2001
 From: Andre <andre@rng.media>
 Date: Wed, 18 Nov 2026 10:24:35 +0100
-Subject: [PATCH 3/3] Effectopus: candle 0.11.1 (zip 9.1.3, fixes 8 RustSec
+Subject: [PATCH 3/4] Effectopus: candle 0.11.1 (zip 9.1.3, fixes 8 RustSec
  advisories), rustix 1.1.6, tokio 1.53.3
 
 Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>
@@ -137658,6 +137658,671 @@ index e45cc8de..a9c62627 100644
  # The optional GPU path (wgpu compute, any vendor); the CPU path stays the reference.
  wgpu = { workspace = true }
  pollster = { workspace = true }
+-- 
+2.56.0
+
+
+From cbf781d207eb11bbe909a6e1b4e9131b336c4c17 Mon Sep 17 00:00:00 2001
+From: Andre <andre@rng.media>
+Date: Wed, 18 Nov 2026 13:51:00 +0100
+Subject: [PATCH 4/4] =?UTF-8?q?Effectopus:=20RNG=20Design=20pass=20?=
+ =?UTF-8?q?=E2=80=94=20warm=20palettes,=20RNG=20red=20+=20gold,=20glass=20?=
+ =?UTF-8?q?popovers,=20calmer=20Home?=
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+
+---
+ crates/ui-egui/src/lib.rs         |   1 +
+ crates/ui-egui/src/panels/home.rs |  16 +-
+ crates/ui-egui/src/rng_design.rs  | 380 ++++++++++++++++++++++++++++++
+ crates/ui-egui/src/theme.rs       | 166 +++++++------
+ 4 files changed, 484 insertions(+), 79 deletions(-)
+ create mode 100644 crates/ui-egui/src/rng_design.rs
+
+diff --git a/crates/ui-egui/src/lib.rs b/crates/ui-egui/src/lib.rs
+index ff44df00..de7cf7a9 100644
+--- a/crates/ui-egui/src/lib.rs
++++ b/crates/ui-egui/src/lib.rs
+@@ -41,6 +41,7 @@ pub mod panels;
+ mod pointer_wrap;
+ pub mod prefs_live;
+ pub mod state;
++pub mod rng_design;
+ pub mod theme;
+ pub mod updates_ui;
+ pub mod widgets;
+diff --git a/crates/ui-egui/src/panels/home.rs b/crates/ui-egui/src/panels/home.rs
+index 932faf89..88a809b9 100644
+--- a/crates/ui-egui/src/panels/home.rs
++++ b/crates/ui-egui/src/panels/home.rs
+@@ -340,7 +340,9 @@ fn home_page(
+     let t = app.tokens;
+     let (x0, w) = (area.min.x, area.width());
+     let mut y = area.min.y;
+-    p.text(pos2(x0, y + 14.0), Align2::LEFT_CENTER, tr("Welcome to Effectopus"), Tokens::semibold(26.0), t.tab_text_active);
++    // RNG patch (Effectopus): the shared RNG Home header (docs/RNG_DESIGN.md §8): the name, not a
++    // "Welcome to" line.
++    p.text(pos2(x0, y + 14.0), Align2::LEFT_CENTER, "Effectopus", Tokens::semibold(crate::rng_design::size::LARGE_TITLE), t.tab_text_active);
+     y += 40.0;
+     p.text(
+         pos2(x0, y + 8.0),
+@@ -362,11 +364,15 @@ fn home_page(
+     for (k, (label, id, icon)) in tiles.into_iter().enumerate() {
+         let r = Rect::from_min_size(pos2(x0 + k as f32 * (tw + gap), y), vec2(tw, 64.0));
+         let resp = ui.interact(r, egui::Id::unique(("home-tile", id)), Sense::click());
+-        p.rect_filled(r, 8.0, if resp.hovered() { t.hover } else { t.panel_bg });
+-        p.rect_stroke(r, 8.0, Stroke::new(1.0, if resp.hovered() { t.accent } else { t.separator }), StrokeKind::Inside);
++        // RNG Design: a pane of glass with a plain monochrome icon (no tinted icon chip, no red
++        // hover outline)
++        let pal = crate::rng_design::palette(!t.kind.is_light());
++        crate::rng_design::paint_glass(p, r, crate::rng_design::radius::CARD, crate::rng_design::Glass::Sidebar, pal);
++        if resp.hovered() {
++            p.rect_filled(r, crate::rng_design::radius::CARD, t.hover.gamma_multiply(0.6));
++        }
+         let ir = Rect::from_center_size(pos2(r.min.x + 30.0, r.center().y), vec2(32.0, 32.0));
+-        p.rect_filled(ir, 7.0, t.accent.gamma_multiply(0.18));
+-        icons::paint(p, ir.shrink(8.0), icon, t.accent);
++        icons::paint(p, ir.shrink(7.0), icon, t.icon);
+         p.with_clip_rect(r.shrink(2.0)).text(pos2(ir.max.x + 12.0, r.center().y), Align2::LEFT_CENTER, tr(label), Tokens::medium(12.5), t.text);
+         app.auto.add(&format!("home.{id}"), r, label);
+         if resp.clicked() {
+diff --git a/crates/ui-egui/src/rng_design.rs b/crates/ui-egui/src/rng_design.rs
+new file mode 100644
+index 00000000..612d4e61
+--- /dev/null
++++ b/crates/ui-egui/src/rng_design.rs
+@@ -0,0 +1,380 @@
++//! RNG Design tokens: one file shared byte-for-byte by every RNG Studio app (CutCat, PhotoFalcon,
++//! PDFrog, DocDuck, SlideSeal, RNG Studio). Source of truth: rng-app-builds/design/rng_design.rs,
++//! spec: rng-app-builds/docs/RNG_DESIGN.md. Copy with scripts/sync-design.sh; don't edit per app.
++#![allow(dead_code)]
++
++use egui::{Color32, CornerRadius, Shadow, Stroke};
++
++/// One appearance's colours (spec §2).
++#[derive(Clone, Copy, Debug, PartialEq)]
++pub struct Palette {
++    pub dark: bool,
++    pub canvas: Color32,
++    pub base: Color32,
++    pub panel: Color32,
++    pub raised: Color32,
++    pub control: Color32,
++    pub hover: Color32,
++    pub pressed: Color32,
++    pub separator: Color32,
++    pub border: Color32,
++    pub text: Color32,
++    pub text_secondary: Color32,
++    pub text_tertiary: Color32,
++    pub accent: Color32,
++    pub accent_fill: Color32,
++    pub accent_text: Color32,
++    pub accent_tint: Color32,
++    pub value: Color32,
++    pub success: Color32,
++    pub warning: Color32,
++    pub danger: Color32,
++    /// Rim of floating surfaces (popovers, dialogs, HUDs).
++    pub rim: Color32,
++}
++
++const fn hex(v: u32) -> Color32 {
++    Color32::from_rgb((v >> 16) as u8, (v >> 8) as u8, v as u8)
++}
++
++pub const DARK: Palette = Palette {
++    dark: true,
++    canvas: hex(0x0e0d0d),
++    base: hex(0x151414),
++    panel: hex(0x1c1b1a),
++    raised: hex(0x242322),
++    control: hex(0x2c2a29),
++    hover: hex(0x33312f),
++    pressed: hex(0x3d3a38),
++    separator: hex(0x2a2827),
++    border: hex(0x3a3735),
++    text: hex(0xf3eee8),
++    text_secondary: hex(0xaaa49d),
++    text_tertiary: hex(0x7d7871),
++    accent: hex(0xff453a),
++    accent_fill: hex(0xd92b20),
++    accent_text: hex(0xff6961),
++    // accent at 16 % over `panel`, premultiplied into an opaque colour so it never stacks
++    accent_tint: hex(0x3e1f1c),
++    value: hex(0xe8b85c),
++    success: hex(0x32d74b),
++    warning: hex(0xffb340),
++    danger: hex(0xff6961),
++    rim: Color32::from_rgba_premultiplied(20, 20, 20, 20),
++};
++
++pub const LIGHT: Palette = Palette {
++    dark: false,
++    canvas: hex(0xe8e5e1),
++    base: hex(0xf3f1ee),
++    panel: hex(0xfbfaf8),
++    raised: hex(0xffffff),
++    control: hex(0xefece8),
++    hover: hex(0xe6e2dd),
++    pressed: hex(0xdbd6d0),
++    separator: hex(0xe3ded8),
++    border: hex(0xcdc7c0),
++    text: hex(0x1d1b19),
++    text_secondary: hex(0x5f5a54),
++    text_tertiary: hex(0x8a847c),
++    accent: hex(0xd70015),
++    accent_fill: hex(0xd70015),
++    accent_text: hex(0xc4000f),
++    // accent at 12 % over `panel`
++    accent_tint: hex(0xf8dcdb),
++    value: hex(0x946510),
++    success: hex(0x1f8f3a),
++    warning: hex(0xa05a00),
++    danger: hex(0xc4000f),
++    rim: Color32::from_rgba_premultiplied(0, 0, 0, 20),
++};
++
++pub fn palette(dark: bool) -> &'static Palette {
++    if dark { &DARK } else { &LIGHT }
++}
++
++/// Type scale in points (spec §3).
++pub mod size {
++    pub const LARGE_TITLE: f32 = 26.0;
++    pub const TITLE1: f32 = 20.0;
++    pub const TITLE2: f32 = 15.0;
++    pub const HEADLINE: f32 = 13.0;
++    pub const BODY: f32 = 13.0;
++    pub const BODY_DENSE: f32 = 12.0;
++    pub const CALLOUT: f32 = 12.0;
++    pub const CAPTION: f32 = 11.0;
++    pub const MICRO: f32 = 10.0;
++}
++
++/// 8 pt grid (spec §4).
++pub mod space {
++    pub const XXS: f32 = 4.0;
++    pub const XS: f32 = 8.0;
++    pub const S: f32 = 12.0;
++    pub const M: f32 = 16.0;
++    pub const L: f32 = 24.0;
++    pub const XL: f32 = 32.0;
++    pub const XXL: f32 = 48.0;
++}
++
++/// Control and bar metrics (spec §4).
++pub mod metric {
++    pub const CONTROL_H: f32 = 28.0;
++    pub const CONTROL_H_DENSE: f32 = 24.0;
++    pub const CONTROL_H_LARGE: f32 = 32.0;
++    pub const TOOLBAR_H: f32 = 40.0;
++    pub const TOOLBAR_H_DENSE: f32 = 36.0;
++    pub const TAB_H: f32 = 30.0;
++    pub const STATUS_H: f32 = 22.0;
++    pub const SIDEBAR_W: f32 = 232.0;
++    pub const INSPECTOR_W: f32 = 296.0;
++    pub const ROW_H: f32 = 28.0;
++    pub const ROW_H_DENSE: f32 = 24.0;
++    pub const ICON: f32 = 16.0;
++    pub const ICON_DENSE: f32 = 14.0;
++    pub const ICON_LARGE: f32 = 20.0;
++}
++
++/// Corner radii (spec §4).
++pub mod radius {
++    pub const SMALL: f32 = 4.0;
++    pub const CONTROL: f32 = 6.0;
++    pub const CARD: f32 = 10.0;
++    pub const WINDOW: f32 = 14.0;
++}
++
++/// Motion in seconds (spec §9).
++pub mod motion {
++    pub const FAST: f32 = 0.12;
++    pub const MEDIUM: f32 = 0.18;
++    pub const SLOW: f32 = 0.24;
++}
++
++pub fn cr(r: f32) -> CornerRadius {
++    CornerRadius::same(r.round() as u8)
++}
++
++/// Floating-layer shadows (spec §5).
++pub fn popover_shadow(p: &Palette) -> Shadow {
++    Shadow { offset: [0, 8], blur: 24, spread: 0, color: Color32::from_black_alpha(if p.dark { 102 } else { 40 }) }
++}
++pub fn dialog_shadow(p: &Palette) -> Shadow {
++    Shadow { offset: [0, 16], blur: 48, spread: 0, color: Color32::from_black_alpha(if p.dark { 128 } else { 56 }) }
++}
++
++/// Popover fill: `raised` at 96 % (the "glass" without a blur egui can't do).
++pub fn popover_fill(p: &Palette) -> Color32 {
++    Color32::from_rgba_unmultiplied(p.raised.r(), p.raised.g(), p.raised.b(), 245)
++}
++pub fn rim_stroke(p: &Palette) -> Stroke {
++    Stroke::new(1.0, if p.dark { Color32::from_white_alpha(20) } else { Color32::from_black_alpha(20) })
++}
++
++/// Keyboard focus ring: 2 px accent.
++pub fn focus_stroke(p: &Palette) -> Stroke {
++    Stroke::new(2.0, p.accent)
++}
++
++/// egui visuals for an app that has no richer theme of its own (spec §2, §5, §9). Apps with their
++/// own token struct map these values in their theme.rs instead.
++pub fn visuals(p: &Palette) -> egui::Visuals {
++    let mut v = if p.dark { egui::Visuals::dark() } else { egui::Visuals::light() };
++    v.panel_fill = p.panel;
++    v.window_fill = popover_fill(p);
++    v.extreme_bg_color = p.base;
++    v.faint_bg_color = p.raised;
++    v.code_bg_color = p.control;
++    v.override_text_color = Some(p.text);
++    v.weak_text_color = Some(p.text_secondary);
++    v.hyperlink_color = p.accent_text;
++    v.warn_fg_color = p.warning;
++    v.error_fg_color = p.danger;
++    v.selection.bg_fill = p.accent_tint;
++    v.selection.stroke = Stroke::new(1.0, p.accent);
++    v.window_stroke = rim_stroke(p);
++    v.window_corner_radius = cr(radius::WINDOW);
++    v.menu_corner_radius = cr(radius::CARD);
++    v.window_shadow = dialog_shadow(p);
++    v.popup_shadow = popover_shadow(p);
++    v.striped = false;
++    v.slider_trailing_fill = true;
++    let w = &mut v.widgets;
++    for s in [&mut w.noninteractive, &mut w.inactive, &mut w.hovered, &mut w.active, &mut w.open] {
++        s.corner_radius = cr(radius::CONTROL);
++        s.expansion = 0.0;
++    }
++    w.noninteractive.bg_fill = p.panel;
++    w.noninteractive.weak_bg_fill = p.panel;
++    w.noninteractive.bg_stroke = Stroke::new(1.0, p.separator);
++    w.noninteractive.fg_stroke = Stroke::new(1.0, p.text_secondary);
++    w.inactive.bg_fill = p.control;
++    w.inactive.weak_bg_fill = p.control;
++    w.inactive.bg_stroke = Stroke::NONE;
++    w.inactive.fg_stroke = Stroke::new(1.0, p.text);
++    w.hovered.bg_fill = p.hover;
++    w.hovered.weak_bg_fill = p.hover;
++    w.hovered.bg_stroke = Stroke::NONE;
++    w.hovered.fg_stroke = Stroke::new(1.0, p.text);
++    w.active.bg_fill = p.pressed;
++    w.active.weak_bg_fill = p.pressed;
++    w.active.bg_stroke = Stroke::NONE;
++    w.active.fg_stroke = Stroke::new(1.0, p.text);
++    w.open.bg_fill = p.hover;
++    w.open.weak_bg_fill = p.hover;
++    w.open.bg_stroke = Stroke::NONE;
++    w.open.fg_stroke = Stroke::new(1.0, p.text);
++    v
++}
++
++/// Spacing for the egui style (spec §4).
++pub fn apply_spacing(s: &mut egui::Style) {
++    s.spacing.item_spacing = egui::vec2(space::XS, space::XXS + 2.0);
++    s.spacing.button_padding = egui::vec2(space::S, space::XXS + 1.0);
++    s.spacing.interact_size.y = metric::CONTROL_H_DENSE;
++    s.spacing.menu_margin = egui::Margin::same(6);
++    s.spacing.window_margin = egui::Margin::same(space::M as i8);
++    s.animation_time = motion::FAST;
++}
++
++/// RNG Glass (spec §5): which pane of glass.
++#[derive(Clone, Copy, Debug, PartialEq, Eq)]
++pub enum Glass {
++    Bar,
++    Sidebar,
++    Popover,
++    Hud,
++    Dialog,
++}
++
++impl Glass {
++    fn alpha(self) -> u8 {
++        match self {
++            Glass::Bar => 219,
++            Glass::Sidebar => 230,
++            Glass::Popover => 240,
++            Glass::Hud => 184,
++            Glass::Dialog => 245,
++        }
++    }
++    fn floating(self) -> bool {
++        matches!(self, Glass::Popover | Glass::Hud | Glass::Dialog)
++    }
++}
++
++/// The glass fill colour for `kind` (unmultiplied alpha over the backdrop).
++pub fn glass_fill(p: &Palette, kind: Glass) -> Color32 {
++    let c = if matches!(kind, Glass::Popover | Glass::Dialog) { p.raised } else { p.panel };
++    Color32::from_rgba_unmultiplied(c.r(), c.g(), c.b(), kind.alpha())
++}
++
++/// Paints one pane of glass: shadow (floating only), tinted fill, side rim, specular top highlight
++/// and (dark) a darker bottom edge. Draw content on top afterwards.
++pub fn paint_glass(painter: &egui::Painter, rect: egui::Rect, r: f32, kind: Glass, p: &Palette) {
++    let radius = cr(r);
++    if kind.floating() {
++        let sh = if kind == Glass::Dialog { dialog_shadow(p) } else { popover_shadow(p) };
++        painter.add(sh.as_shape(rect, radius));
++    }
++    painter.rect_filled(rect, radius, glass_fill(p, kind));
++    let side = if p.dark { Color32::from_white_alpha(14) } else { Color32::from_black_alpha(18) };
++    painter.rect_stroke(rect, radius, Stroke::new(1.0, side), egui::StrokeKind::Inside);
++    // specular highlight along the top edge, inset by the corner radius so it follows the curve
++    let hi = if p.dark { Color32::from_white_alpha(40) } else { Color32::from_white_alpha(180) };
++    let inset = r.max(2.0);
++    let y = rect.top() + 0.5;
++    let x0 = rect.left() + inset;
++    let x1 = rect.right() - inset;
++    if x1 > x0 {
++        let mid = (x0 + x1) * 0.5;
++        let mut mesh = egui::Mesh::default();
++        let fade = Color32::TRANSPARENT;
++        // two quads: transparent → highlight → transparent, 1 px tall
++        for (a, b, ca, cb) in [(x0, mid, fade, hi), (mid, x1, hi, fade)] {
++            let i = mesh.vertices.len() as u32;
++            mesh.colored_vertex(egui::pos2(a, y - 0.5), ca);
++            mesh.colored_vertex(egui::pos2(b, y - 0.5), cb);
++            mesh.colored_vertex(egui::pos2(b, y + 0.5), cb);
++            mesh.colored_vertex(egui::pos2(a, y + 0.5), ca);
++            mesh.add_triangle(i, i + 1, i + 2);
++            mesh.add_triangle(i, i + 2, i + 3);
++        }
++        painter.add(egui::Shape::mesh(mesh));
++    }
++    if p.dark && kind.floating() {
++        let y = rect.bottom() - 0.5;
++        painter.line_segment(
++            [egui::pos2(rect.left() + inset, y), egui::pos2(rect.right() - inset, y)],
++            Stroke::new(1.0, Color32::from_black_alpha(64)),
++        );
++    }
++}
++
++/// The window backdrop the glass sits on: `canvas` with a soft warm glow toward the top centre.
++pub fn paint_backdrop(painter: &egui::Painter, rect: egui::Rect, p: &Palette) {
++    painter.rect_filled(rect, CornerRadius::ZERO, p.canvas);
++    let glow = if p.dark { Color32::from_rgba_unmultiplied(0x6b, 0x55, 0x48, 26) } else { Color32::from_rgba_unmultiplied(0xff, 0xff, 0xff, 120) };
++    let c = egui::pos2(rect.center().x, rect.top() - rect.height() * 0.15);
++    let rad = rect.width().max(rect.height()) * 0.75;
++    // radial glow as a fan of triangles: centre opaque, rim transparent
++    let mut mesh = egui::Mesh::default();
++    mesh.colored_vertex(c, glow);
++    let n = 48u32;
++    for k in 0..=n {
++        let a = std::f32::consts::TAU * k as f32 / n as f32;
++        mesh.colored_vertex(c + egui::vec2(a.cos(), a.sin()) * rad, Color32::TRANSPARENT);
++    }
++    for k in 1..=n {
++        mesh.add_triangle(0, k, k + 1);
++    }
++    painter.with_clip_rect(rect).add(egui::Shape::mesh(mesh));
++}
++
++/// Rounds the corners of an already-painted square pane by painting `backdrop` outside a radius-`r`
++/// arc in each corner (for docked panels drawn by code that only paints rectangles).
++pub fn paint_corner_mask(painter: &egui::Painter, rect: egui::Rect, r: f32, backdrop: Color32) {
++    let corners = [
++        (rect.left_top(), egui::vec2(1.0, 1.0)),
++        (rect.right_top(), egui::vec2(-1.0, 1.0)),
++        (rect.right_bottom(), egui::vec2(-1.0, -1.0)),
++        (rect.left_bottom(), egui::vec2(1.0, -1.0)),
++    ];
++    for (corner, dir) in corners {
++        let centre = corner + dir * r;
++        let mut mesh = egui::Mesh::default();
++        mesh.colored_vertex(corner, backdrop);
++        let n = 8u32;
++        for k in 0..=n {
++            let a = std::f32::consts::FRAC_PI_2 * k as f32 / n as f32;
++            // from the edge point beside the corner along x, round to the edge point along y
++            let v = egui::vec2(-dir.x * a.cos(), -dir.y * a.sin());
++            mesh.colored_vertex(centre + v * r, backdrop);
++        }
++        for k in 1..=n {
++            mesh.add_triangle(0, k, k + 1);
++        }
++        painter.add(egui::Shape::mesh(mesh));
++    }
++}
++
++/// Specular rim for a docked pane: 1 px highlight across the top edge plus a faint side rim.
++pub fn paint_pane_rim(painter: &egui::Painter, rect: egui::Rect, r: f32, p: &Palette) {
++    let side = if p.dark { Color32::from_white_alpha(12) } else { Color32::from_black_alpha(16) };
++    painter.rect_stroke(rect, cr(r), Stroke::new(1.0, side), egui::StrokeKind::Inside);
++    let hi = if p.dark { Color32::from_white_alpha(34) } else { Color32::from_white_alpha(200) };
++    let y = rect.top() + 0.5;
++    let (x0, x1) = (rect.left() + r, rect.right() - r);
++    if x1 > x0 {
++        let mid = (x0 + x1) * 0.5;
++        let mut mesh = egui::Mesh::default();
++        for (a, b, ca, cb) in [(x0, mid, Color32::TRANSPARENT, hi), (mid, x1, hi, Color32::TRANSPARENT)] {
++            let i = mesh.vertices.len() as u32;
++            mesh.colored_vertex(egui::pos2(a, y - 0.5), ca);
++            mesh.colored_vertex(egui::pos2(b, y - 0.5), cb);
++            mesh.colored_vertex(egui::pos2(b, y + 0.5), cb);
++            mesh.colored_vertex(egui::pos2(a, y + 0.5), ca);
++            mesh.add_triangle(i, i + 1, i + 2);
++            mesh.add_triangle(i, i + 2, i + 3);
++        }
++        painter.add(egui::Shape::mesh(mesh));
++    }
++}
+diff --git a/crates/ui-egui/src/theme.rs b/crates/ui-egui/src/theme.rs
+index e18d834e..dd7df7e3 100644
+--- a/crates/ui-egui/src/theme.rs
++++ b/crates/ui-egui/src/theme.rs
+@@ -158,51 +158,54 @@ impl Tokens {
+ 
+ impl Tokens {
+     pub fn for_kind(kind: ThemeKind) -> Self {
++        // RNG patch (Effectopus): RNG Design palettes (crate::rng_design; docs/RNG_DESIGN.md) —
++        // warm graphite, RNG red, gold values — instead of upstream's grey + blue.
++        use crate::rng_design::{DARK as D, LIGHT as L};
+         let dark = Tokens {
+             kind,
+-            app_bg: Color32::from_rgb(0x12, 0x12, 0x12),
+-            header_bg: Color32::from_rgb(0x1f, 0x1f, 0x1f),
+-            panel_bg: Color32::from_rgb(0x23, 0x23, 0x23),
+-            tab_text: Color32::from_rgb(0x9a, 0x9a, 0x9a),
+-            tab_text_active: Color32::from_rgb(0xe3, 0xe3, 0xe3),
+-            focus: Color32::from_rgb(0x2d, 0x8c, 0xeb),
+-            accent: Color32::from_rgb(0x2d, 0x8c, 0xeb),
+-            accent_hover: Color32::from_rgb(0x4a, 0xa0, 0xf5),
+-            text: Color32::from_rgb(0xc8, 0xc8, 0xc8),
+-            text_dim: Color32::from_rgb(0x9a, 0x9a, 0x9a),
+-            text_faint: Color32::from_rgb(0x8c, 0x8c, 0x8c),
+-            icon: Color32::from_rgb(0xb4, 0xb4, 0xb4),
+-            icon_active: Color32::from_rgb(0xf0, 0xf0, 0xf0),
+-            hover: Color32::from_rgb(0x30, 0x30, 0x30),
+-            pressed: Color32::from_rgb(0x45, 0x45, 0x45),
+-            field_bg: Color32::from_rgb(0x17, 0x17, 0x17),
+-            field_border: Color32::from_rgb(0x3a, 0x3a, 0x3a),
+-            separator: Color32::from_rgb(0x34, 0x34, 0x34),
+-            row: Color32::from_rgb(0x23, 0x23, 0x23),
+-            row_alt: Color32::from_rgb(0x27, 0x27, 0x27),
+-            row_selected: Color32::from_rgb(0x3a, 0x3a, 0x3a),
+-            hot_text: Color32::from_rgb(0x3d, 0x8f, 0xf5),
+-            tl_bg: Color32::from_rgb(0x1b, 0x1b, 0x1b),
+-            tl_ruler_bg: Color32::from_rgb(0x23, 0x23, 0x23),
++            app_bg: D.canvas,
++            header_bg: D.base,
++            panel_bg: D.panel,
++            tab_text: D.text_secondary,
++            tab_text_active: D.text,
++            focus: D.border,
++            accent: D.accent,
++            accent_hover: D.accent_text,
++            text: D.text,
++            text_dim: D.text_secondary,
++            text_faint: D.text_secondary,
++            icon: Color32::from_rgb(0xd6, 0xd0, 0xc9),
++            icon_active: D.text,
++            hover: D.hover,
++            pressed: D.pressed,
++            field_bg: D.base,
++            field_border: D.border,
++            separator: D.separator,
++            row: D.panel,
++            row_alt: Color32::from_rgb(0x20, 0x1f, 0x1e),
++            row_selected: D.pressed,
++            hot_text: D.value,
++            tl_bg: D.base,
++            tl_ruler_bg: D.panel,
+             tl_ruler_tick: Color32::from_rgb(0x70, 0x70, 0x70),
+-            tl_ruler_text: Color32::from_rgb(0x9a, 0x9a, 0x9a),
+-            cti: Color32::from_rgb(0x2d, 0x8c, 0xeb),
++            tl_ruler_text: D.text_secondary,
++            cti: D.accent,
+             work_area: Color32::from_rgb(0x4a, 0x4a, 0x4a),
+             cache_green: Color32::from_rgb(0x3c, 0xa6, 0x4c),
+             cache_blue: Color32::from_rgb(0x3a, 0x6f, 0xd8),
+             keyframe: Color32::from_rgb(0xa8, 0xa8, 0xa8),
+-            keyframe_selected: Color32::from_rgb(0x3d, 0x8f, 0xf5),
+-            pasteboard: Color32::from_rgb(0x1a, 0x1a, 0x1a),
+-            timecode: Color32::from_rgb(0x3d, 0x8f, 0xf5),
+-            danger: Color32::from_rgb(0xe0, 0x4a, 0x3c),
+-            warning: Color32::from_rgb(0xe8, 0x9a, 0x2c),
+-            fx_header: Color32::from_rgb(0x2a, 0x2a, 0x2a),
+-            fx_header_active: Color32::from_rgb(0x2f, 0x3a, 0x52),
+-            tl_graph_selected: Color32::from_rgb(0x2a, 0x2a, 0x2a),
+-            switch_well: Color32::from_rgb(0x19, 0x19, 0x19),
++            keyframe_selected: D.accent,
++            pasteboard: D.canvas,
++            timecode: D.value,
++            danger: D.danger,
++            warning: D.warning,
++            fx_header: D.raised,
++            fx_header_active: D.accent_tint,
++            tl_graph_selected: D.raised,
++            switch_well: D.base,
+             tl_nav_bar: Color32::from_rgb(0x55, 0x55, 0x55),
+             tl_work_area_bar: Color32::from_rgb(0x5c, 0x5c, 0x5c),
+-            expr_bg: Color32::from_rgb(0x1a, 0x1a, 0x1a),
++            expr_bg: D.base,
+             expr_text: Color32::from_rgb(0xe8, 0x7c, 0x5c),
+             labels: default_labels(),
+             radius: 6.0,
+@@ -215,54 +218,59 @@ impl Tokens {
+         match kind {
+             ThemeKind::Dark => dark,
+             ThemeKind::Darker => Tokens {
+-                app_bg: Color32::from_rgb(0x08, 0x08, 0x08),
+-                header_bg: Color32::from_rgb(0x16, 0x16, 0x16),
+-                panel_bg: Color32::from_rgb(0x19, 0x19, 0x19),
+-                row: Color32::from_rgb(0x19, 0x19, 0x19),
+-                row_alt: Color32::from_rgb(0x1d, 0x1d, 0x1d),
+-                tl_bg: Color32::from_rgb(0x12, 0x12, 0x12),
+-                tl_ruler_bg: Color32::from_rgb(0x19, 0x19, 0x19),
+-                field_bg: Color32::from_rgb(0x0e, 0x0e, 0x0e),
+-                pasteboard: Color32::from_rgb(0x11, 0x11, 0x11),
++                app_bg: Color32::from_rgb(0x09, 0x08, 0x08),
++                header_bg: Color32::from_rgb(0x12, 0x11, 0x10),
++                panel_bg: Color32::from_rgb(0x17, 0x16, 0x15),
++                row: Color32::from_rgb(0x17, 0x16, 0x15),
++                row_alt: Color32::from_rgb(0x1b, 0x1a, 0x19),
++                tl_bg: Color32::from_rgb(0x10, 0x0f, 0x0e),
++                tl_ruler_bg: Color32::from_rgb(0x17, 0x16, 0x15),
++                field_bg: Color32::from_rgb(0x0c, 0x0b, 0x0b),
++                pasteboard: Color32::from_rgb(0x0e, 0x0d, 0x0d),
+                 ..dark
+             },
+             ThemeKind::Light => Tokens {
+-                app_bg: Color32::from_rgb(0xb4, 0xb4, 0xb4),
+-                header_bg: Color32::from_rgb(0xd6, 0xd6, 0xd6),
+-                panel_bg: Color32::from_rgb(0xe6, 0xe6, 0xe6),
+-                tab_text: Color32::from_rgb(0x5a, 0x5a, 0x5a),
+-                tab_text_active: Color32::from_rgb(0x14, 0x14, 0x14),
+-                text: Color32::from_rgb(0x22, 0x22, 0x22),
+-                text_dim: Color32::from_rgb(0x5a, 0x5a, 0x5a),
+-                text_faint: Color32::from_rgb(0x68, 0x68, 0x68),
+-                hot_text: Color32::from_rgb(0x00, 0x5a, 0x9c),
+-                timecode: Color32::from_rgb(0x00, 0x5a, 0x9c),
+-                icon: Color32::from_rgb(0x3c, 0x3c, 0x3c),
+-                icon_active: Color32::from_rgb(0x10, 0x10, 0x10),
+-                hover: Color32::from_rgb(0xd0, 0xd0, 0xd0),
+-                pressed: Color32::from_rgb(0xc0, 0xc0, 0xc0),
+-                field_bg: Color32::from_rgb(0xfa, 0xfa, 0xfa),
+-                field_border: Color32::from_rgb(0xaa, 0xaa, 0xaa),
+-                separator: Color32::from_rgb(0xc8, 0xc8, 0xc8),
+-                row: Color32::from_rgb(0xe6, 0xe6, 0xe6),
+-                row_alt: Color32::from_rgb(0xde, 0xde, 0xde),
+-                row_selected: Color32::from_rgb(0xaa, 0xc8, 0xf0),
+-                tl_bg: Color32::from_rgb(0xd2, 0xd2, 0xd2),
+-                tl_ruler_bg: Color32::from_rgb(0xe2, 0xe2, 0xe2),
+-                tl_ruler_text: Color32::from_rgb(0x50, 0x50, 0x50),
+-                pasteboard: Color32::from_rgb(0xa8, 0xa8, 0xa8),
++                app_bg: L.canvas,
++                header_bg: L.base,
++                panel_bg: L.panel,
++                tab_text: L.text_secondary,
++                tab_text_active: L.text,
++                text: L.text,
++                text_dim: L.text_secondary,
++                text_faint: L.text_secondary,
++                hot_text: L.value,
++                timecode: L.value,
++                icon: Color32::from_rgb(0x3a, 0x36, 0x32),
++                icon_active: L.text,
++                hover: L.hover,
++                pressed: L.pressed,
++                field_bg: L.raised,
++                field_border: L.border,
++                separator: L.separator,
++                row: L.panel,
++                row_alt: Color32::from_rgb(0xf5, 0xf3, 0xf0),
++                row_selected: L.accent_tint,
++                tl_bg: L.base,
++                tl_ruler_bg: L.raised,
++                tl_ruler_text: L.text_secondary,
++                pasteboard: L.canvas,
+                 // Keyframes have no outline: dark enough to stand out on the light time graph.
+                 keyframe: Color32::from_rgb(0x6c, 0x6c, 0x6c),
+                 // Custom-painted surfaces in the Light palette, so dark text stays readable on
+                 // them (#644).
+-                fx_header: Color32::from_rgb(0xd8, 0xd8, 0xd8),
+-                fx_header_active: Color32::from_rgb(0xb0, 0xcf, 0xec),
+-                tl_graph_selected: Color32::from_rgb(0xc2, 0xc2, 0xc2),
+-                switch_well: Color32::from_rgb(0xf2, 0xf2, 0xf2),
++                fx_header: L.control,
++                fx_header_active: L.accent_tint,
++                tl_graph_selected: L.pressed,
++                switch_well: L.raised,
+                 tl_nav_bar: Color32::from_rgb(0x9a, 0x9a, 0x9a),
+                 tl_work_area_bar: Color32::from_rgb(0x94, 0x94, 0x94),
+-                expr_bg: Color32::from_rgb(0xf2, 0xf2, 0xf2),
++                expr_bg: L.raised,
+                 expr_text: Color32::from_rgb(0xa3, 0x34, 0x17),
++                accent: L.accent,
++                accent_hover: L.accent_text,
++                cti: L.accent,
++                keyframe_selected: L.accent,
++                focus: L.border,
+                 ..dark
+             },
+         }
+@@ -624,6 +632,16 @@ pub fn apply_visuals(ctx: &egui::Context, t: &Tokens) {
+     v.menu_corner_radius = egui::CornerRadius::same(6);
+     v.popup_shadow = egui::epaint::Shadow { offset: [0, 6], blur: 20, spread: 0, color: Color32::from_black_alpha(150) };
+     v.window_shadow = egui::epaint::Shadow { offset: [0, 10], blur: 36, spread: 0, color: Color32::from_black_alpha(170) };
++    // RNG patch: popovers and dialogs are panes of RNG glass (docs/RNG_DESIGN.md §5)
++    {
++        let pal = crate::rng_design::palette(!t.kind.is_light());
++        v.window_fill = crate::rng_design::glass_fill(pal, crate::rng_design::Glass::Popover);
++        v.window_stroke = crate::rng_design::rim_stroke(pal);
++        v.window_corner_radius = crate::rng_design::cr(crate::rng_design::radius::WINDOW);
++        v.menu_corner_radius = crate::rng_design::cr(crate::rng_design::radius::CARD);
++        v.window_shadow = crate::rng_design::dialog_shadow(pal);
++        v.popup_shadow = crate::rng_design::popover_shadow(pal);
++    }
+     for w in [&mut v.widgets.noninteractive, &mut v.widgets.inactive, &mut v.widgets.hovered, &mut v.widgets.active, &mut v.widgets.open] {
+         w.corner_radius = egui::CornerRadius::same(t.radius_sm as u8);
+     }
 -- 
 2.56.0
 
