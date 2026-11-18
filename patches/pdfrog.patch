@@ -1,7 +1,7 @@
-From cc0db01ca2ed23a1dd0b2b4bbdefb7f47fd7cb1b Mon Sep 17 00:00:00 2001
+From 54483497e928c0849cd4bd8aa9a8a2bff123a735 Mon Sep 17 00:00:00 2001
 From: Andre <andre@rng.media>
 Date: Tue, 17 Nov 2026 12:50:04 +0100
-Subject: [PATCH 1/3] DocDog: RNG Media patches on PdfCraft
+Subject: [PATCH 1/4] DocDog: RNG Media patches on PdfCraft
 
 Name and icon, Home (no community card), About credits PdfCraft without
 Discord, no title-bar Discord button or Help Discord link, glass graphite
@@ -43893,7 +43893,7 @@ index da3f0fc9..2e0f180e 100644
      Link { command: "help.github", label: "PdfCraft on GitHub", url: GITHUB, icon: "code-xml" },
      Link { command: "help.website", label: "ArtCraft website", url: WEBSITE, icon: "external-link" },
 diff --git a/crates/ui-egui/src/app.rs b/crates/ui-egui/src/app.rs
-index 6e4a52cc..d405c946 100644
+index aa6f2224..031eebb3 100644
 --- a/crates/ui-egui/src/app.rs
 +++ b/crates/ui-egui/src/app.rs
 @@ -44,7 +44,7 @@ impl PdfCraftApp {
@@ -43906,10 +43906,10 @@ index 6e4a52cc..d405c946 100644
          let title = titled(front.and_then(|i| crate::canvas::tab_label(self, i)));
          // The web page's title is what an embedding host reads to tell which file opened, so it
 diff --git a/crates/ui-egui/src/chrome.rs b/crates/ui-egui/src/chrome.rs
-index 4cc264e7..c986872b 100644
+index 4c632d39..049a2bd7 100644
 --- a/crates/ui-egui/src/chrome.rs
 +++ b/crates/ui-egui/src/chrome.rs
-@@ -275,10 +275,8 @@ pub fn tab_strip(app: &mut PdfCraftApp, ui: &mut egui::Ui) {
+@@ -322,10 +322,8 @@ pub fn tab_strip(app: &mut PdfCraftApp, ui: &mut egui::Ui) {
                      if icons::button(ui, "circle-help", button, false, tl!("Keyboard shortcuts")).clicked() {
                          app.dialog = Some(Dialog::Shortcuts);
                      }
@@ -43923,7 +43923,7 @@ index 4cc264e7..c986872b 100644
              });
          });
 diff --git a/crates/ui-egui/src/dialogs.rs b/crates/ui-egui/src/dialogs.rs
-index be9b295a..c73e4ebe 100644
+index 0d98079b..7cf85ea8 100644
 --- a/crates/ui-egui/src/dialogs.rs
 +++ b/crates/ui-egui/src/dialogs.rs
 @@ -1673,14 +1673,14 @@ fn dialog_about(ui: &mut egui::Ui, req: &mut Pending) -> bool {
@@ -44002,7 +44002,7 @@ index 817655b3..44484670 100644
              );
          });
 diff --git a/crates/ui-egui/src/menus.rs b/crates/ui-egui/src/menus.rs
-index b697cd6c..930275d0 100644
+index ca3eeca9..1db1889c 100644
 --- a/crates/ui-egui/src/menus.rs
 +++ b/crates/ui-egui/src/menus.rs
 @@ -21,7 +21,7 @@ use crate::{PdfCraftApp, RightPanel};
@@ -44096,10 +44096,10 @@ index c3ce3e0e..39efe41f 100644
 2.56.0
 
 
-From ef99a94c44f4bebe60eae329c005f9e63ec50ae1 Mon Sep 17 00:00:00 2001
+From 1d508c56936c8d53f92528ea6753cdc83b18b78b Mon Sep 17 00:00:00 2001
 From: Andre <andre@rng.media>
 Date: Tue, 17 Nov 2026 13:17:51 +0100
-Subject: [PATCH 2/3] PDFrog: rename from DocDog, frog icon
+Subject: [PATCH 2/4] PDFrog: rename from DocDog, frog icon
 
 Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>
 ---
@@ -108139,7 +108139,7 @@ index 2e0f180e..f01963b1 100644
      Link { command: "help.github", label: "PdfCraft on GitHub", url: GITHUB, icon: "code-xml" },
      Link { command: "help.website", label: "ArtCraft website", url: WEBSITE, icon: "external-link" },
 diff --git a/crates/ui-egui/src/app.rs b/crates/ui-egui/src/app.rs
-index d405c946..d3d4d364 100644
+index 031eebb3..4820b929 100644
 --- a/crates/ui-egui/src/app.rs
 +++ b/crates/ui-egui/src/app.rs
 @@ -44,7 +44,7 @@ impl PdfCraftApp {
@@ -108152,10 +108152,10 @@ index d405c946..d3d4d364 100644
          let title = titled(front.and_then(|i| crate::canvas::tab_label(self, i)));
          // The web page's title is what an embedding host reads to tell which file opened, so it
 diff --git a/crates/ui-egui/src/chrome.rs b/crates/ui-egui/src/chrome.rs
-index c986872b..aed80b82 100644
+index 049a2bd7..5ec77c11 100644
 --- a/crates/ui-egui/src/chrome.rs
 +++ b/crates/ui-egui/src/chrome.rs
-@@ -275,7 +275,7 @@ pub fn tab_strip(app: &mut PdfCraftApp, ui: &mut egui::Ui) {
+@@ -322,7 +322,7 @@ pub fn tab_strip(app: &mut PdfCraftApp, ui: &mut egui::Ui) {
                      if icons::button(ui, "circle-help", button, false, tl!("Keyboard shortcuts")).clicked() {
                          app.dialog = Some(Dialog::Shortcuts);
                      }
@@ -108165,7 +108165,7 @@ index c986872b..aed80b82 100644
                  });
              });
 diff --git a/crates/ui-egui/src/dialogs.rs b/crates/ui-egui/src/dialogs.rs
-index c73e4ebe..b21af8db 100644
+index 7cf85ea8..83b4f3dc 100644
 --- a/crates/ui-egui/src/dialogs.rs
 +++ b/crates/ui-egui/src/dialogs.rs
 @@ -1673,9 +1673,9 @@ fn dialog_about(ui: &mut egui::Ui, req: &mut Pending) -> bool {
@@ -108229,7 +108229,7 @@ index 44484670..653d1406 100644
              );
          });
 diff --git a/crates/ui-egui/src/menus.rs b/crates/ui-egui/src/menus.rs
-index 930275d0..23c795ae 100644
+index 1db1889c..57ac4d94 100644
 --- a/crates/ui-egui/src/menus.rs
 +++ b/crates/ui-egui/src/menus.rs
 @@ -21,7 +21,7 @@ use crate::{PdfCraftApp, RightPanel};
@@ -108267,10 +108267,10 @@ index 39efe41f..0d99fe45 100644
 2.56.0
 
 
-From a01030acd16c6f62ef9ae5ce6f84e572a17157c4 Mon Sep 17 00:00:00 2001
+From c95c77ba97babe41e4ab9d7fe8ff4a9abaed930d Mon Sep 17 00:00:00 2001
 From: Andre <andre@rng.media>
 Date: Tue, 17 Nov 2026 13:30:47 +0100
-Subject: [PATCH 3/3] PDFrog: release clean-up (trademarks, app id, phone-home,
+Subject: [PATCH 3/4] PDFrog: release clean-up (trademarks, app id, phone-home,
  licences)
 
 Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>
@@ -164896,7 +164896,7 @@ index b0338718..671dfa13 100644
      ]
  }
 diff --git a/crates/automation/src/tools.rs b/crates/automation/src/tools.rs
-index e4301f2f..dde10718 100644
+index d058c183..3f30ae29 100644
 --- a/crates/automation/src/tools.rs
 +++ b/crates/automation/src/tools.rs
 @@ -946,7 +946,7 @@ pub fn tools() -> Vec<ToolDef> {
@@ -164917,7 +164917,7 @@ index e4301f2f..dde10718 100644
              .ro()
              .with(schema(json!({ "doc": doc() }), &["doc"])),
          t("sign_id_create", "Create a digital ID", "Create a self-signed digital ID and save it as a password-protected .p12 file (Acrobat: Configure a new digital ID ▸ Create a new digital ID ▸ Save to file). Default key: 2048-bit RSA, valid 5 years.").with(schema(
-@@ -1223,7 +1223,7 @@ pub fn tools() -> Vec<ToolDef> {
+@@ -1230,7 +1230,7 @@ pub fn tools() -> Vec<ToolDef> {
          t(
              "doc_header_footer",
              "Add header and footer",
@@ -164926,7 +164926,7 @@ index e4301f2f..dde10718 100644
          )
          .cmd("edit.header_footer")
          .with(schema(
-@@ -1242,7 +1242,7 @@ pub fn tools() -> Vec<ToolDef> {
+@@ -1249,7 +1249,7 @@ pub fn tools() -> Vec<ToolDef> {
              }),
              &["doc"],
          )),
@@ -164935,7 +164935,7 @@ index e4301f2f..dde10718 100644
              .cmd("edit.watermark")
              .with(schema(
                  json!({
-@@ -1287,7 +1287,7 @@ pub fn tools() -> Vec<ToolDef> {
+@@ -1294,7 +1294,7 @@ pub fn tools() -> Vec<ToolDef> {
              .ro()
              .cmd("edit.background")
              .with(schema(json!({ "doc": doc(), "pages": pages("to check (default: all)") }), &["doc"])),
@@ -164944,7 +164944,7 @@ index e4301f2f..dde10718 100644
              .destructive()
              .with(schema(json!({ "doc": doc(), "kind": { "type": "string", "enum": ["header_footer", "watermark", "background", "printer_marks"] } }), &["doc", "kind"])),
          t("doc_export_images", "Export pages as images", "Write pages as PNG, JPEG or TIFF files (`<name>_page_<n>.png|jpg|tif`) into a folder, at a resolution (default 150 dpi). JPEG and TIFF are flattened onto white paper. A page too large for the renderer at that resolution is drawn at the most it allows, listed in `lower_dpi` ({page, dpi}). Includes unsaved edits.")
-@@ -1615,7 +1615,7 @@ pub fn tools() -> Vec<ToolDef> {
+@@ -1622,7 +1622,7 @@ pub fn tools() -> Vec<ToolDef> {
          t(
              "fill_sign_add",
              "Fill & Sign: type text or place a mark",
@@ -164953,7 +164953,7 @@ index e4301f2f..dde10718 100644
          )
          .cmd("sign.fill.text")
          .with(schema(
-@@ -1809,13 +1809,13 @@ pub fn tools() -> Vec<ToolDef> {
+@@ -1817,13 +1817,13 @@ pub fn tools() -> Vec<ToolDef> {
          t(
              "xfa_to_static",
              "Convert an XFA form to a static form",
@@ -164983,10 +164983,10 @@ index ee40a15f..2ffa8f1b 100644
      doc.trailer_mut().set(b"Info".to_vec(), Object::Ref(r));
  }
 diff --git a/crates/edit/src/added/layout.rs b/crates/edit/src/added/layout.rs
-index a6a55224..54a204b6 100644
+index b4a805a2..b3e7476b 100644
 --- a/crates/edit/src/added/layout.rs
 +++ b/crates/edit/src/added/layout.rs
-@@ -320,7 +320,7 @@ pub(crate) fn shaped_width(t: &AddedText, s: &str, rtl: bool) -> f64 {
+@@ -324,7 +324,7 @@ pub(crate) fn shaped_width(t: &AddedText, s: &str, rtl: bool) -> f64 {
  
  pub(super) fn arabic_error(e: GlyphError, text: &str) -> EditError {
      EditError::Invalid(match e {
@@ -164995,7 +164995,7 @@ index a6a55224..54a204b6 100644
                                 (to build it in, set CRAFT_FONTS_DIR to a craft-fonts checkout that has an Arab face)"
              .into(),
          GlyphError::Missing => format!("the Arabic font can't show \"{text}\""),
-@@ -330,7 +330,7 @@ pub(super) fn arabic_error(e: GlyphError, text: &str) -> EditError {
+@@ -334,7 +334,7 @@ pub(super) fn arabic_error(e: GlyphError, text: &str) -> EditError {
  
  pub(super) fn hebrew_error(e: GlyphError, text: &str) -> EditError {
      EditError::Invalid(match e {
@@ -165018,7 +165018,7 @@ index e269fda3..269204ca 100644
              "the image's crop may also clip what a content stream that is damaged or can't be decoded draws, so it isn't removed".into()
          }));
 diff --git a/crates/edit/src/text/fallback.rs b/crates/edit/src/text/fallback.rs
-index 1a3d9181..c7781f57 100644
+index 41ca7305..1f0516b6 100644
 --- a/crates/edit/src/text/fallback.rs
 +++ b/crates/edit/src/text/fallback.rs
 @@ -322,7 +322,7 @@ pub(crate) fn no_fallback_font(text: &str) -> EditError {
@@ -165078,7 +165078,7 @@ index eae8a53e..b03657af 100644
  
  pub fn command(id: &str) -> Option<&'static CommandSpec> {
 diff --git a/crates/engine/src/document.rs b/crates/engine/src/document.rs
-index 8a166330..c495a2fe 100644
+index 98a7e450..f14943a1 100644
 --- a/crates/engine/src/document.rs
 +++ b/crates/engine/src/document.rs
 @@ -200,7 +200,7 @@ impl std::fmt::Display for TextNotice {
@@ -165091,10 +165091,10 @@ index 8a166330..c495a2fe 100644
              (Some(name), false) => write!(
                  f,
 diff --git a/crates/engine/src/edit/run.rs b/crates/engine/src/edit/run.rs
-index 79a99a56..347468f8 100644
+index 58a2609d..18d34b3e 100644
 --- a/crates/engine/src/edit/run.rs
 +++ b/crates/engine/src/edit/run.rs
-@@ -188,7 +188,7 @@ fn note_skipped(doc: &mut pdfcraft_cos::Document, report: &pdfcraft_xfdf::Report
+@@ -190,7 +190,7 @@ fn note_skipped(doc: &mut pdfcraft_cos::Document, report: &pdfcraft_xfdf::Report
      let more = report.skipped.len().saturating_sub(shown.len());
      let more = if more > 0 { format!("; and {more} more") } else { String::new() };
      doc.note_repair(format!(
@@ -165171,10 +165171,10 @@ index be2ff188..614b9a98 100644
      }
      Ok(())
 diff --git a/crates/fonts/src/shaped_text.rs b/crates/fonts/src/shaped_text.rs
-index c85de92f..cb26c4fc 100644
+index 2a4625f5..4f220fea 100644
 --- a/crates/fonts/src/shaped_text.rs
 +++ b/crates/fonts/src/shaped_text.rs
-@@ -364,7 +364,7 @@ fn type3_font(clusters: &[&ShapedCluster], outlines: &HashMap<(ShapedScript, u32
+@@ -463,7 +463,7 @@ fn type3_font(clusters: &[&ShapedCluster], outlines: &HashMap<(ShapedScript, u32
              },
              |f| f.family,
          ),
@@ -165184,10 +165184,10 @@ index c85de92f..cb26c4fc 100644
      let mut descriptor = Dict::new();
      descriptor.set(b"Type".to_vec(), Object::name("FontDescriptor"));
 diff --git a/crates/ocr/src/lib.rs b/crates/ocr/src/lib.rs
-index aac95f18..de6b24fe 100644
+index d702bca0..132b2095 100644
 --- a/crates/ocr/src/lib.rs
 +++ b/crates/ocr/src/lib.rs
-@@ -47,7 +47,7 @@ pub const MAX_PIXELS: u32 = 64_000_000;
+@@ -49,7 +49,7 @@ pub const MAX_PIXELS: u32 = 64_000_000;
  
  #[derive(Debug, thiserror::Error)]
  pub enum OcrError {
@@ -165272,10 +165272,10 @@ index 3544113f..a162f065 100644
      build.set(b"App".to_vec(), Object::Dict(app));
      v.set(b"Prop_Build".to_vec(), Object::Dict(build));
 diff --git a/crates/sign/src/pdf/types.rs b/crates/sign/src/pdf/types.rs
-index 93883e75..62b25f8e 100644
+index 5691761d..f307f7d7 100644
 --- a/crates/sign/src/pdf/types.rs
 +++ b/crates/sign/src/pdf/types.rs
-@@ -154,7 +154,7 @@ pub const WORDINGS: &[&str] = &[
+@@ -158,7 +158,7 @@ pub const WORDINGS: &[&str] = &[
      "The signature's byte range does not exclude exactly its contents.",
      "The signature contents are not hexadecimal.",
      "The signature could not be read ({}).",
@@ -165284,7 +165284,7 @@ index 93883e75..62b25f8e 100644
      "The signature uses the legacy adbe.x509.rsa_sha1 format.",
      // What was read leniently on the way, each sentence worded where the reading happens.
      "The signature is BER-encoded (indefinite lengths) rather than DER; it was read leniently.",
-@@ -187,10 +187,10 @@ pub const WORDINGS: &[&str] = &[
+@@ -191,10 +191,10 @@ pub const WORDINGS: &[&str] = &[
      "The signer's certificate was not valid at the time of signing.",
      "The signer's certificate does not allow digital signatures (its key usage has neither digital signature nor non-repudiation).",
      "The signer's certificate is not issued for signing documents (its extended key usage has no document-signing purpose).",
@@ -165297,7 +165297,7 @@ index 93883e75..62b25f8e 100644
      "The certificate of {} does not allow this many CA certificates below it (path length), so it is not used to vouch for {}.",
      "The certificate of {} was not valid at the time of signing, so it is not used to vouch for {}.",
      "The signer's identity is unknown because it has not been included in your list of trusted certificates and none of its parent certificates are trusted certificates.",
-@@ -220,7 +220,7 @@ pub const WORDINGS: &[&str] = &[
+@@ -224,7 +224,7 @@ pub const WORDINGS: &[&str] = &[
      "The timestamp token is valid and its authority is trusted.",
      "The timestamp token is valid, but the timestamp authority is not in your list of trusted certificates.",
      // What the list itself could not read.
@@ -165307,10 +165307,10 @@ index 93883e75..62b25f8e 100644
      "Unsigned signature field",
      "Signature is valid",
 diff --git a/crates/sign/src/pdf/validate.rs b/crates/sign/src/pdf/validate.rs
-index d3ad411a..47fab116 100644
+index 66eec94f..d41efce9 100644
 --- a/crates/sign/src/pdf/validate.rs
 +++ b/crates/sign/src/pdf/validate.rs
-@@ -120,7 +120,7 @@ pub(super) fn validate_into(doc: &Document, bytes: &[u8], trust: &TrustStore, v:
+@@ -126,7 +126,7 @@ pub(super) fn validate_into(doc: &Document, bytes: &[u8], trust: &TrustStore, v:
      let unsupported = |info: &mut SignatureInfo, why: &str| {
          info.status = Status::Unknown;
          // What is not supported yet is named by the reader, in its own words.
@@ -165319,7 +165319,7 @@ index d3ad411a..47fab116 100644
      };
      if info.sub_filter.as_deref() == Some("adbe.x509.rsa_sha1") {
          return validate_x509_rsa_sha1(SignatureValidation { doc, bytes, trust, info, cache }, v, (l0, o1, covered), &contents);
-@@ -502,7 +502,7 @@ fn check_dss_revocation(doc: &Document, signer: Option<&Certificate>, at: &Optio
+@@ -552,7 +552,7 @@ fn check_dss_revocation(doc: &Document, signer: Option<&Certificate>, at: &Optio
          None if cut => {
              info.details.push(Detail::of(
                  "The signature could not be checked ({}).",
@@ -165328,7 +165328,7 @@ index d3ad411a..47fab116 100644
              ));
              DssRevocation::Incomplete
          }
-@@ -682,7 +682,7 @@ fn validate_x509_rsa_sha1(context: SignatureValidation<'_>, v: &Dict, (l0, o1, c
+@@ -732,7 +732,7 @@ fn validate_x509_rsa_sha1(context: SignatureValidation<'_>, v: &Dict, (l0, o1, c
              info.certificate = Some(cert);
              info.status = Status::Unknown;
              // What is not supported yet is named by the reader, in its own words.
@@ -165402,10 +165402,10 @@ index daaf88a9..51dabab4 100644
          ),
          B::ImportIcon => app.choose_field_image_target(app.views[index].id, name, Some(identity)),
 diff --git a/crates/ui-egui/src/canvas/bars.rs b/crates/ui-egui/src/canvas/bars.rs
-index 85807e28..448f9d6e 100644
+index 17ca3924..02c7f4ff 100644
 --- a/crates/ui-egui/src/canvas/bars.rs
 +++ b/crates/ui-egui/src/canvas/bars.rs
-@@ -188,7 +188,7 @@ pub(super) fn notices(
+@@ -193,7 +193,7 @@ pub(super) fn notices(
      } else if info.xfa == Some(pdfcraft_render::Xfa::Dynamic) {
          Some((
              "triangle-alert",
@@ -165414,7 +165414,7 @@ index 85807e28..448f9d6e 100644
              false,
          ))
      } else if info.xfa == Some(pdfcraft_render::Xfa::Static) {
-@@ -277,13 +277,13 @@ fn cut_pages_bar(view: &mut DocView, ui: &mut egui::Ui, t: &Tokens) {
+@@ -282,13 +282,13 @@ fn cut_pages_bar(view: &mut DocView, ui: &mut egui::Ui, t: &Tokens) {
      let n = view.cut_pages.len();
      let text = if n == 1 {
          crate::i18n::fmt(
@@ -165431,10 +165431,10 @@ index 85807e28..448f9d6e 100644
              &[("n", &n.to_string()), ("page", &page)],
          )
 diff --git a/crates/ui-egui/src/chrome.rs b/crates/ui-egui/src/chrome.rs
-index aed80b82..78fe1e64 100644
+index 5ec77c11..659bd7a2 100644
 --- a/crates/ui-egui/src/chrome.rs
 +++ b/crates/ui-egui/src/chrome.rs
-@@ -72,8 +72,8 @@ pub fn tab_strip(app: &mut PdfCraftApp, ui: &mut egui::Ui) {
+@@ -108,8 +108,8 @@ pub fn tab_strip(app: &mut PdfCraftApp, ui: &mut egui::Ui) {
                      app.active = None;
                      app.combine_tab.focused = false;
                  }
@@ -165446,7 +165446,7 @@ index aed80b82..78fe1e64 100644
                      + 54.0
                      + window_controls::width(&controls.right);
 diff --git a/crates/ui-egui/src/dialogs.rs b/crates/ui-egui/src/dialogs.rs
-index b21af8db..aa6c923e 100644
+index 83b4f3dc..044a48d8 100644
 --- a/crates/ui-egui/src/dialogs.rs
 +++ b/crates/ui-egui/src/dialogs.rs
 @@ -1568,7 +1568,7 @@ fn dialog_recovery(ui: &mut egui::Ui, app: &mut PdfCraftApp) -> bool {
@@ -165538,7 +165538,7 @@ index d69d545b..78962971 100644
                      });
                      for text in cells {
 diff --git a/crates/ui-egui/src/dialogs/preferences.rs b/crates/ui-egui/src/dialogs/preferences.rs
-index 02384f6b..8aadf0b2 100644
+index 9dd27ef7..ccfb6033 100644
 --- a/crates/ui-egui/src/dialogs/preferences.rs
 +++ b/crates/ui-egui/src/dialogs/preferences.rs
 @@ -654,13 +654,12 @@ fn card_general(ui: &mut egui::Ui, app: &mut PdfCraftApp, t: &Tokens, ctx: &mut
@@ -165557,7 +165557,7 @@ index 02384f6b..8aadf0b2 100644
      ctx.checkbox(ui, &mut app.show_secured_notice, tl!("Show a notice when a document is secured"), t);
  
      #[cfg(not(target_arch = "wasm32"))]
-@@ -825,7 +824,7 @@ fn card_documents_and_view(ui: &mut egui::Ui, app: &mut PdfCraftApp, t: &Tokens,
+@@ -829,7 +828,7 @@ fn card_documents_and_view(ui: &mut egui::Ui, app: &mut PdfCraftApp, t: &Tokens,
          apply_view_pref_changes(&mut app.views[i], &defaults, ViewPrefChanges { always_reset: false, ..changes });
      }
      ctx.checkbox(ui, &mut app.text_links, tl!("Open web and email addresses written in the page text"), t);
@@ -165628,7 +165628,7 @@ index 653d1406..c322f726 100644
              egui::Frame::NONE
                  .fill(t.card)
 diff --git a/crates/ui-egui/src/lib.rs b/crates/ui-egui/src/lib.rs
-index d77c7b1e..5a41bd53 100644
+index 6a606209..1ccb2891 100644
 --- a/crates/ui-egui/src/lib.rs
 +++ b/crates/ui-egui/src/lib.rs
 @@ -13,7 +13,7 @@
@@ -165641,7 +165641,7 @@ index d77c7b1e..5a41bd53 100644
      ..craft_update::suite::PDFCRAFT
  };
 diff --git a/crates/ui-egui/src/menus.rs b/crates/ui-egui/src/menus.rs
-index 23c795ae..59911f66 100644
+index 57ac4d94..e3547c81 100644
 --- a/crates/ui-egui/src/menus.rs
 +++ b/crates/ui-egui/src/menus.rs
 @@ -228,7 +228,7 @@ const SIGN: &[&str] = &[
@@ -165715,7 +165715,7 @@ index 64251d51..1385777f 100644
                      if !title.is_empty() {
                          ui.label(title);
 diff --git a/crates/ui-egui/src/tools/content_ui.rs b/crates/ui-egui/src/tools/content_ui.rs
-index 884b32ec..16593be6 100644
+index 6dab2483..56cf4c08 100644
 --- a/crates/ui-egui/src/tools/content_ui.rs
 +++ b/crates/ui-egui/src/tools/content_ui.rs
 @@ -52,10 +52,10 @@ pub(crate) fn undrawable_message(c: char) -> String {
@@ -165779,7 +165779,7 @@ index 80be26e5..bde90cc5 100644
  /// main button's response and the ▾'s (give it to `egui::Popup::menu`).
  pub fn split_pill(ui: &mut egui::Ui, icon: &str, label: &str, more: &str) -> (Response, Response) {
 diff --git a/crates/ui-egui/src/workflows/js_ui.rs b/crates/ui-egui/src/workflows/js_ui.rs
-index 18f9bcb7..5125603c 100644
+index 625802ab..39fcbdbe 100644
 --- a/crates/ui-egui/src/workflows/js_ui.rs
 +++ b/crates/ui-egui/src/workflows/js_ui.rs
 @@ -86,7 +86,7 @@ impl PdfCraftApp {
@@ -166674,6 +166674,41 @@ index 4e6b26ce..af79e675 100644
          assert_eq!(plist_value(plist, "LSMinimumSystemVersion").as_deref(), Some("11.0"));
          assert_eq!(pdf_registration(plist), "com.adobe.pdf (role=Editor, rank=Alternate)");
      }
+-- 
+2.56.0
+
+
+From f5cd6efedbbc398140e5eaebaf90b29858f4342b Mon Sep 17 00:00:00 2001
+From: Andre <andre@rng.media>
+Date: Wed, 18 Nov 2026 10:33:01 +0100
+Subject: [PATCH 4/4] PDFrog: document the unfixable rsa timing advisory for
+ cargo audit
+
+rsa is pinned =0.10.0-rc.18 by pdfcraft-sign and upstream craft-libs pkcs7;
+it only verifies signatures here (private keys use aws-lc-rs), so
+RUSTSEC-2023-0071 is ignored with a note until upstream moves to rsa 0.10.0.
+
+Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>
+---
+ .cargo/audit.toml | 9 +++++++++
+ 1 file changed, 9 insertions(+)
+ create mode 100644 .cargo/audit.toml
+
+diff --git a/.cargo/audit.toml b/.cargo/audit.toml
+new file mode 100644
+index 00000000..b26ddccd
+--- /dev/null
++++ b/.cargo/audit.toml
+@@ -0,0 +1,9 @@
++# cargo-audit settings for the PDFrog (rng) build.
++[advisories]
++ignore = [
++    # rsa Marvin timing attack. rsa is pinned to =0.10.0-rc.18 by pdfcraft-sign and by
++    # upstream craft-libs pkcs7 (still pinned at craft-libs 01ffc9f, 2026-11-18). Here rsa only
++    # verifies signatures; RSA private-key operations go through aws-lc-rs (ADR-0009), so the
++    # decryption timing side channel is not reachable. Drop this once upstream moves to rsa 0.10.0.
++    "RUSTSEC-2023-0071",
++]
 -- 
 2.56.0
 
