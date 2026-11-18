@@ -276,15 +276,67 @@ pub fn fetch_manifest() -> Result<(Manifest, Option<String>)> {
     } else {
         fs::read_to_string(&src).map_err(|e| format!("{src}: {e}"))
     };
-    match fetched.and_then(|t| serde_json::from_str::<Manifest>(&t).map(|m| (t, m)).map_err(|e| format!("bad manifest: {e}"))) {
+    let local = !src.starts_with("http");
+    match fetched.and_then(|t| parse_manifest(&t, local).map(|m| (t, m))) {
         Ok((text, m)) => {
             let _ = write_atomic(&cache, text.as_bytes());
             Ok((m, None))
         }
-        Err(e) => match fs::read(&cache).ok().and_then(|b| serde_json::from_slice::<Manifest>(&b).ok()) {
-            Some(m) => Ok((m, Some(format!("Offline, showing the last list ({e})")))),
+        Err(e) => match fs::read_to_string(&cache).ok().and_then(|t| parse_manifest(&t, false).ok()) {
+            Some(m) => Ok((m, Some(format!("Showing the last good app list ({e})")))),
             None => Err(e),
         },
+    }
+}
+
+/// Ed25519 key that signs manifest.json (private half: ~/.config/rng-studio-release on Andre's PC).
+const MANIFEST_KEY: [u8; 32] = hex_32("30cbdc1ad7e4630a7c4b94c4e0ca2b2e8295bf9e0c9f85a990af54c6d7eeb119");
+/// While false, unsigned manifests are still accepted (the grace period); a bad signature never is.
+const REQUIRE_SIGNED: bool = false;
+
+const fn hex_32(s: &str) -> [u8; 32] {
+    let b = s.as_bytes();
+    let mut out = [0u8; 32];
+    let mut i = 0;
+    while i < 32 {
+        out[i] = hex_digit(b[2 * i]) << 4 | hex_digit(b[2 * i + 1]);
+        i += 1;
+    }
+    out
+}
+
+const fn hex_digit(c: u8) -> u8 {
+    if c <= b'9' {
+        c - b'0'
+    } else {
+        c - b'a' + 10
+    }
+}
+
+#[derive(Deserialize)]
+struct Signed {
+    body: String,
+    sig: String,
+}
+
+/// Reads a manifest, using its `signed` copy when it has one: that copy must carry a valid
+/// signature from MANIFEST_KEY, so a tampered download is refused. `local` = a test file.
+fn parse_manifest(text: &str, local: bool) -> Result<Manifest> {
+    #[derive(Deserialize)]
+    struct Outer {
+        signed: Option<Signed>,
+    }
+    let outer: Outer = serde_json::from_str(text).map_err(|e| format!("bad manifest: {e}"))?;
+    match outer.signed {
+        Some(s) => {
+            use ed25519_dalek::{Signature, Verifier, VerifyingKey};
+            let key = VerifyingKey::from_bytes(&MANIFEST_KEY).map_err(|e| e.to_string())?;
+            let sig: [u8; 64] = hex::decode(s.sig.trim()).ok().and_then(|v| v.try_into().ok()).ok_or("the app list's signature is unreadable")?;
+            key.verify(s.body.as_bytes(), &Signature::from_bytes(&sig)).map_err(|_| "the app list failed its signature check, so it wasn't used".to_string())?;
+            serde_json::from_str(&s.body).map_err(|e| format!("bad manifest: {e}"))
+        }
+        None if REQUIRE_SIGNED && !local => Err("the app list isn't signed, so it wasn't used".into()),
+        None => serde_json::from_str(text).map_err(|e| format!("bad manifest: {e}")),
     }
 }
 
@@ -783,6 +835,20 @@ fn write_own_shortcut(exe: &Path) {
                 let _ = s.create_lnk(l);
             }
         }
+    }
+}
+
+#[cfg(test)]
+mod sig_tests {
+    #[test]
+    fn signed_manifests() {
+        // Output of publish.sh's signing step for the studio-b12 manifest.
+        let good = include_str!("../tests/signed-manifest.json");
+        assert!(super::parse_manifest(good, false).is_ok());
+        let bad = good.replacen("\\\"build\\\":12", "\\\"build\\\":13", 1);
+        assert_ne!(good, bad);
+        assert!(super::parse_manifest(&bad, false).is_err());
+        assert!(super::parse_manifest(r#"{"launcher":null,"apps":[]}"#, false).is_ok());
     }
 }
 

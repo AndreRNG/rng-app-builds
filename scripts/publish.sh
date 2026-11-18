@@ -122,6 +122,23 @@ m["apps"] = [a for a in m["apps"] if a["id"] not in former]
 json.dump(m, open(man_path, "w"), indent=2)
 PY
 
+# Sign: RNG Studio (b13+) checks `signed.body` against the Ed25519 key built into it and uses that
+# copy; older launchers read the plain fields around it. Key: ~/.config/rng-studio-release (back it up).
+key=~/.config/rng-studio-release/manifest-signing.pem
+python3 - "$pubdir/manifest.json" "$key" <<'PY'
+import json, subprocess, sys, tempfile
+man_path, key = sys.argv[1:]
+m = json.load(open(man_path))
+m.pop("signed", None)
+body = json.dumps(m, separators=(",", ":"), ensure_ascii=False)
+with tempfile.NamedTemporaryFile() as f:
+    f.write(body.encode()); f.flush()
+    sig = subprocess.check_output(["openssl", "pkeyutl", "-sign", "-inkey", key, "-rawin", "-in", f.name])
+m["signed"] = {"body": body, "sig": sig.hex()}
+json.dump(m, open(man_path, "w"), indent=2, ensure_ascii=False)
+print("manifest signed")
+PY
+
 cd "$pubdir"
 git add manifest.json licences
 git diff --cached --quiet || { git commit -qm "manifest: ${tags[*]}"; git push -q; }
