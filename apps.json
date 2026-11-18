@@ -5,5 +5,6 @@
   "docduck": {"name": "DocDuck", "tagline": "Word processor", "upstream": "storytold/wordcraft", "src": "~/src/wordcraft", "pkg": "wordcraft", "bin": "wordcraft", "wm_class": "media.rng.docduck", "replaces": [{"id": "docdog", "name": "DocDog"}]},
   "slideseal": {"name": "SlideSeal", "tagline": "Slide decks", "upstream": "storytold/deckcraft", "src": "~/src/deckcraft", "pkg": "deckcraft", "bin": "deckcraft", "wm_class": "media.rng.slideseal", "replaces": [{"id": "deckduck", "name": "DeckDuck"}]},
   "vectorviper": {"name": "VectorViper", "tagline": "Vector editor", "upstream": "storytold/vectorcraft", "src": "~/src/vectorcraft", "pkg": "vectorcraft", "bin": "vectorcraft", "wm_class": "media.rng.vectorviper"},
-  "effectopus": {"name": "Effectopus", "tagline": "Motion graphics", "upstream": "storytold/effectcraft", "src": "~/src/effectcraft", "pkg": "effectcraft", "bin": "effectcraft", "wm_class": "media.rng.effectopus"}
+  "effectopus": {"name": "Effectopus", "tagline": "Motion graphics", "upstream": "storytold/effectcraft", "src": "~/src/effectcraft", "pkg": "effectcraft", "bin": "effectcraft", "wm_class": "media.rng.effectopus"},
+  "streameleon": {"name": "Streameleon", "tagline": "Screen recorder & streaming", "src": "~/src/streameleon", "pkg": "streameleon", "bin": "streameleon", "wm_class": "media.rng.streameleon", "closed_source": true, "build": "workflow streameleon.yml (private source)"}
 }
