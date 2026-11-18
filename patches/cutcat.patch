@@ -1,7 +1,7 @@
 From 1d4811cfb399ac57417056929478acaadfeb8e04 Mon Sep 17 00:00:00 2001
 From: Andre <andre@rng.media>
 Date: Tue, 17 Nov 2026 12:26:55 +0100
-Subject: [PATCH 1/7] CutCat: RNG Media patches on FilmCraft
+Subject: [PATCH 1/8] CutCat: RNG Media patches on FilmCraft
 
 Branding (name, icon, wordmark, About), glass theme, Premiere-style Home
 on startup, Tabler icons, playhead-anchored zoom, ruler-wheel zoom,
@@ -28349,7 +28349,7 @@ g!-5COB`E#deoBnM@dqF6>_Iv_UHx3vIVCg!09G{HqW}N^
 From d909c2dd65e352f41c787a797eaacef9938e0d75 Mon Sep 17 00:00:00 2001
 From: Andre <andre@rng.media>
 Date: Tue, 17 Nov 2026 13:31:51 +0100
-Subject: [PATCH 2/7] CutCat: release clean-up (trademarks, app id, phone-home,
+Subject: [PATCH 2/8] CutCat: release clean-up (trademarks, app id, phone-home,
  licences)
 
 Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>
@@ -116725,7 +116725,7 @@ index b083fc42..1c588c0b 100644
 From 45e184345c6af654d4b930bc675b2aa95d30c8c0 Mon Sep 17 00:00:00 2001
 From: Andre <andre@rng.media>
 Date: Tue, 17 Nov 2026 13:36:04 +0100
-Subject: [PATCH 3/7] CutCat: rename remaining upstream names
+Subject: [PATCH 3/8] CutCat: rename remaining upstream names
 
 Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>
 ---
@@ -117850,7 +117850,7 @@ index 08fd5a75..20eee530 100644
 From 4037c2ab3f1fb7653cc50f23d8b82a5c2320568c Mon Sep 17 00:00:00 2001
 From: Andre <andre@rng.media>
 Date: Tue, 17 Nov 2026 19:12:02 +0100
-Subject: [PATCH 4/7] CutCat: build with speech-to-text and natural voices
+Subject: [PATCH 4/8] CutCat: build with speech-to-text and natural voices
 
 Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>
 ---
@@ -117879,7 +117879,7 @@ index 4ed57db7..fc36bccd 100644
 From 2fcb1c1899701c426056ebdb9f372ecb6157f761 Mon Sep 17 00:00:00 2001
 From: Andre <andre@rng.media>
 Date: Tue, 17 Nov 2026 22:15:26 +0100
-Subject: [PATCH 5/7] =?UTF-8?q?CutCat:=20Connect=20Claude=20(Claude=20link?=
+Subject: [PATCH 5/8] =?UTF-8?q?CutCat:=20Connect=20Claude=20(Claude=20link?=
  =?UTF-8?q?,=20--bridge=20auto,=20Help=20=E2=96=B8=20Connect=20Claude)?=
 MIME-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
@@ -118604,7 +118604,7 @@ index b776933b..b9b26549 100644
 From feb10b5c522db33df23b53ce63e0d6d9cbc3c08a Mon Sep 17 00:00:00 2001
 From: Andre <andre@rng.media>
 Date: Wed, 18 Nov 2026 10:31:10 +0100
-Subject: [PATCH 6/7] CutCat: fix RustSec advisories (zip 9, candle 0.11, rmcp
+Subject: [PATCH 6/8] CutCat: fix RustSec advisories (zip 9, candle 0.11, rmcp
  3.11, rustls-rustcrypto 0.1)
 
 zip 7 -> 9.1 (8 advisories; also via candle 0.9 -> 0.11), rmcp 3.6 -> 3.11,
@@ -120707,7 +120707,7 @@ index 12c759c6..a7b27108 100644
 From d78f3f762f667d2bd4463dfc4c4429387e2666ba Mon Sep 17 00:00:00 2001
 From: Andre <andre@rng.media>
 Date: Wed, 18 Nov 2026 11:09:14 +0100
-Subject: [PATCH 7/7] CutCat: mark exports with neural-voice audio as
+Subject: [PATCH 7/8] CutCat: mark exports with neural-voice audio as
  AI-generated (EU AI Act Art. 50(2))
 MIME-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
@@ -121186,6 +121186,1082 @@ index f1d7349a..03c663dc 100644
 +        }
 +    }
 +}
+-- 
+2.56.0
+
+
+From 7d72dced3bef00f6729bd8af95099958859abc8d Mon Sep 17 00:00:00 2001
+From: Andre <andre@rng.media>
+Date: Tue, 17 Nov 2026 22:56:41 +0100
+Subject: [PATCH 8/8] =?UTF-8?q?CutCat:=20RNG=20Design=20pass=20=E2=80=94?=
+ =?UTF-8?q?=20glass=20panes,=20warm=20palette,=20new=20Home,=20real=20ligh?=
+ =?UTF-8?q?t=20theme?=
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+
+Shared RNG Design tokens (crates/ui-egui/src/rng_design.rs, from rng-app-builds):
+- Panels are rounded panes of glass with specular rims floating on a warm backdrop;
+  title bar and popovers are glass.
+- Warm graphite dark palette; Light rebuilt on the RNG light palette (was Premiere grey
+  with blue selections); the default highlight keeps Light's accessible red.
+- Home: wordmark, one sentence, one primary action + secondary buttons, Recent in a
+  glass pane (was an icon-card grid).
+- Active tool = tinted well + red glyph; cream bins; workspace name in sentence case.
+---
+ crates/ui-egui/src/app/frame.rs            |   7 +-
+ crates/ui-egui/src/dock_ui.rs              |  31 +-
+ crates/ui-egui/src/header.rs               |   8 +-
+ crates/ui-egui/src/lib.rs                  |   1 +
+ crates/ui-egui/src/panels/import_mode.rs   | 110 ++++--
+ crates/ui-egui/src/panels/project_views.rs |   9 +-
+ crates/ui-egui/src/panels/tools.rs         |   8 +-
+ crates/ui-egui/src/rng_design.rs           | 380 +++++++++++++++++++++
+ crates/ui-egui/src/theme.rs                | 264 +++++++-------
+ 9 files changed, 644 insertions(+), 174 deletions(-)
+ create mode 100644 crates/ui-egui/src/rng_design.rs
+
+diff --git a/crates/ui-egui/src/app/frame.rs b/crates/ui-egui/src/app/frame.rs
+index 9b64cc4a..559756c2 100644
+--- a/crates/ui-egui/src/app/frame.rs
++++ b/crates/ui-egui/src/app/frame.rs
+@@ -52,7 +52,8 @@ impl FilmcraftApp {
+         }
+         let t = self.tokens;
+         let full = ui.max_rect();
+-        ui.painter().rect_filled(full, 0.0, t.app_bg);
++        // RNG Glass: the backdrop the panes of glass sit on (docs/RNG_DESIGN.md §5)
++        crate::rng_design::paint_backdrop(ui.painter(), full, crate::rng_design::palette(t.kind != crate::theme::ThemeKind::Light));
+         if self.ui.fullscreen_program {
+             ui.painter().rect_filled(full, 0.0, egui::Color32::BLACK);
+             panels::monitor::show(self, ui, full, panels::monitor::Which::Program);
+@@ -65,7 +66,9 @@ impl FilmcraftApp {
+             header::show(self, ui, header);
+         }
+         let status_h = if self.ui.show_status_bar { 20.0 } else { 0.0 };
+-        let body = egui::Rect::from_min_max(egui::pos2(full.min.x + 1.0, header.max.y + 1.0), egui::pos2(full.max.x - 1.0, full.max.y - status_h - 2.0));
++        // RNG Glass: panes float a gap away from the window edges
++        let g = t.gap;
++        let body = egui::Rect::from_min_max(egui::pos2(full.min.x + g, header.max.y), egui::pos2(full.max.x - g, full.max.y - status_h - g));
+         match self.ui.mode {
+             state::Mode::Edit => self.dock_area(ui, body),
+             state::Mode::Import => panels::import_mode::show(self, ui, body),
+diff --git a/crates/ui-egui/src/dock_ui.rs b/crates/ui-egui/src/dock_ui.rs
+index 03b61e8a..9f3070a6 100644
+--- a/crates/ui-egui/src/dock_ui.rs
++++ b/crates/ui-egui/src/dock_ui.rs
+@@ -277,10 +277,25 @@ impl FilmcraftApp {
+             menu: None,
+             seq_menu_viewport: egui::ViewportId::ROOT,
+             bodies: Vec::new(),
++            glass_frames: Vec::new(),
+             restore_workspace: false,
+         };
+         let output = area.show_content(&mut child, &layout, &style, &mut content);
+-        let FilmContent { seq_actions, mut menu, seq_menu_viewport, bodies, restore_workspace, .. } = content;
++        let FilmContent { seq_actions, mut menu, seq_menu_viewport, bodies, glass_frames, restore_workspace, .. } = content;
++        // RNG Glass (docs/RNG_DESIGN.md §5): every docked pane (tab strip + body) gets rounded
++        // corners on the backdrop and a specular rim.
++        let pal = crate::rng_design::palette(t.kind != crate::theme::ThemeKind::Light);
++        let focused = self.ui.focused;
++        for (panel, rect, painter) in &glass_frames {
++            let pane = Rect::from_min_max(egui::pos2(rect.min.x, rect.min.y - t.tab_h), rect.max);
++            let painter = painter.with_clip_rect(body);
++            crate::rng_design::paint_corner_mask(&painter, pane, crate::rng_design::radius::CARD, t.app_bg);
++            crate::rng_design::paint_pane_rim(&painter, pane, crate::rng_design::radius::CARD, pal);
++            if *panel == focused {
++                let r = crate::rng_design::cr(crate::rng_design::radius::CARD);
++                painter.rect_stroke(pane, r, Stroke::new(1.0, t.focus), StrokeKind::Inside);
++            }
++        }
+         ctx.data_mut(|data| data.insert_temp(bodies_id(), bodies));
+         if let Some(panel) = output.focused {
+             self.ui.focused = panel;
+@@ -468,8 +483,8 @@ fn dock_style(ui: &egui::Ui, t: &Tokens) -> DockStyle {
+     style.text = t.tab_text_active;
+     style.inactive_text = t.tab_text;
+     style.accent = t.focus;
+-    // glass: a hairline light rim around each panel card on the dark app background
+-    style.border = egui::Stroke::new(1.0, egui::Color32::from_white_alpha(14));
++    // RNG Glass: the rim is painted per pane after the dock (rounded), so no square border here
++    style.border = egui::Stroke::NONE;
+     style.floating_stroke = egui::Stroke::new(1.0, egui::Color32::from_white_alpha(22));
+     style.font = Tokens::ui(12.0);
+     style
+@@ -490,6 +505,9 @@ struct FilmContent<'a> {
+     /// The viewport of the Timeline tab strip whose sequence tab menu was opened this pass.
+     seq_menu_viewport: egui::ViewportId,
+     bodies: Vec<(PanelKind, Rect, egui::LayerId)>,
++    /// RNG Glass: each main-window panel body and the painter of its layer, rounded and rimmed
++    /// after the dock area is drawn.
++    glass_frames: Vec<(PanelKind, Rect, egui::Painter)>,
+     /// Restore Workspace chosen in a tab's menu; it replaces the layout after the dock area is drawn.
+     restore_workspace: bool,
+ }
+@@ -500,6 +518,9 @@ impl DockContent<PanelKind> for FilmContent<'_> {
+         let frame = ui.max_rect();
+         let rect = frame;
+         self.bodies.push((*panel, rect, ui.layer_id()));
++        if ui.ctx().viewport_id() == egui::ViewportId::ROOT {
++            self.glass_frames.push((*panel, rect, ui.painter().clone()));
++        }
+         // A panel in its own OS window draws in that window's coordinates: its automation
+         // elements carry the window so they are not matched against main-window points.
+         let viewport = ui.ctx().viewport_id();
+@@ -517,7 +538,9 @@ impl DockContent<PanelKind> for FilmContent<'_> {
+         // The body fills its frame; allocating it lets a floated panel take its full size.
+         ui.allocate_rect(ui.max_rect(), Sense::hover());
+         // Painted after the body so child backgrounds cannot hide the focus outline (#1075).
+-        if self.app.ui.focused == *panel {
++        // RNG Glass: the focused pane's outline is drawn rounded with the rims (dock_area); a panel
++        // in its own OS window keeps the square one.
++        if self.app.ui.focused == *panel && ui.ctx().viewport_id() != egui::ViewportId::ROOT {
+             ui.painter().rect_stroke(frame, 0.0, Stroke::new(1.0, t.focus), StrokeKind::Inside);
+         }
+     }
+diff --git a/crates/ui-egui/src/header.rs b/crates/ui-egui/src/header.rs
+index d5ef6d2b..c51218eb 100644
+--- a/crates/ui-egui/src/header.rs
++++ b/crates/ui-egui/src/header.rs
+@@ -19,8 +19,9 @@ pub const HEIGHT: f32 = 38.0;
+ pub fn show(app: &mut FilmcraftApp, ui: &mut egui::Ui, rect: Rect) {
+     let t = app.tokens;
+     let p = ui.painter().clone();
+-    p.rect_filled(rect, 0.0, t.header_bg);
+-    p.line_segment([rect.left_bottom(), rect.right_bottom()], Stroke::new(1.0, Color32::BLACK));
++    // RNG Glass: the title bar is a docked pane of glass over the backdrop (docs/RNG_DESIGN.md §5)
++    let pal = crate::rng_design::palette(t.kind != crate::theme::ThemeKind::Light);
++    p.rect_filled(rect, 0.0, crate::rng_design::glass_fill(pal, crate::rng_design::Glass::Bar));
+     let drag = ui.interact(rect, egui::Id::unique("header-drag"), Sense::click_and_drag());
+     if drag.drag_started_by(egui::PointerButton::Primary) {
+         ui.ctx().send_viewport_cmd(egui::ViewportCommand::StartDrag);
+@@ -125,7 +126,8 @@ pub fn show(app: &mut FilmcraftApp, ui: &mut egui::Ui, rect: Rect) {
+     }
+     let ws_resp = btn(ui, Icon::Workspaces, "workspaces", tl!("Workspaces"), app);
+     // workspace name (caps)
+-    let ws = crate::i18n::to_uppercase(crate::i18n::t(&app.ui.workspace));
++    // RNG Design: sentence case, not caps (docs/RNG_DESIGN.md §3)
++    let ws = crate::i18n::t(&app.ui.workspace).to_string();
+     let wg = p.layout_no_wrap(ws.clone(), Tokens::ui(11.0), t.text_dim);
+     let wr = Rect::from_min_size(pos2(rx - wg.size().x + 10.0, rect.center().y - 10.0), vec2(wg.size().x + 8.0, 20.0));
+     let wresp = ui.interact(wr, egui::Id::unique("hdr-ws-name"), Sense::click());
+diff --git a/crates/ui-egui/src/lib.rs b/crates/ui-egui/src/lib.rs
+index c9f86c24..a65c0328 100644
+--- a/crates/ui-egui/src/lib.rs
++++ b/crates/ui-egui/src/lib.rs
+@@ -73,6 +73,7 @@ pub mod scrub;
+ mod shuttle;
+ pub mod source_playback;
+ pub mod state;
++pub mod rng_design;
+ pub mod theme;
+ mod theme_favorites;
+ pub mod updates_ui;
+diff --git a/crates/ui-egui/src/panels/import_mode.rs b/crates/ui-egui/src/panels/import_mode.rs
+index c0ec7281..02d19bc7 100644
+--- a/crates/ui-egui/src/panels/import_mode.rs
++++ b/crates/ui-egui/src/panels/import_mode.rs
+@@ -8,75 +8,113 @@ use crate::FilmcraftApp;
+ use crate::theme::Tokens;
+ 
+ pub fn show(app: &mut FilmcraftApp, ui: &mut egui::Ui, rect: Rect) {
++    use crate::rng_design::{self as d, Glass};
+     let t = app.tokens;
+-    ui.painter().rect_filled(rect, t.radius, t.panel_bg);
+-    // RNG patch: a Premiere-style Home (new / open / import, then Recent) in CutCat's glass style,
+-    // instead of the upstream demo cards.
+-    ui.painter().text(rect.min + vec2(28.0, 36.0), Align2::LEFT_CENTER, tl!("Welcome to CutCat"), Tokens::semibold(24.0), t.text);
++    let dark = t.kind != crate::theme::ThemeKind::Light;
++    let pal = d::palette(dark);
++    // RNG patch: Home in the RNG Design layout (docs/RNG_DESIGN.md §8): wordmark, one sentence, one
++    // primary action beside the secondary ones, then Recent in a pane of glass. It sits straight on
++    // the window backdrop; drop media anywhere to import it.
++    let col = Rect::from_min_max(rect.min + vec2(d::space::XXL, d::space::XL), pos2((rect.min.x + d::space::XXL + 880.0).min(rect.max.x - d::space::XXL), rect.max.y - d::space::XL));
++    let mut y = col.min.y;
++    let title_h = 40.0;
++    if crate::brand::paint_wordmark(ui, pos2(col.min.x, y + title_h / 2.0), title_h, dark).is_none() {
++        ui.painter().text(pos2(col.min.x, y + title_h / 2.0), Align2::LEFT_CENTER, "CutCat", Tokens::semibold(d::size::LARGE_TITLE), t.text);
++    }
++    y += title_h + d::space::S;
+     ui.painter().text(
+-        rect.min + vec2(28.0, 66.0),
++        pos2(col.min.x, y + 8.0),
+         Align2::LEFT_CENTER,
+-        tl!("Start a new project, open one, or drop media anywhere in the window to import it."),
+-        Tokens::ui(13.0),
++        tl!("Edit video, sound and captions. Drop media anywhere in the window to import it."),
++        Tokens::ui(d::size::BODY),
+         t.text_dim,
+     );
++    y += 16.0 + d::space::L;
+     let ctx = ui.ctx().clone();
+-    let cards = [
+-        (tl!("New Project"), "file.newProject", tl!("Start from an empty project"), crate::icons::Icon::Plus),
+-        (tl!("Open Project…"), "file.open", tl!("A .fcproj from disk"), crate::icons::Icon::Folder),
+-        (tl!("Import Media…"), "file.import", tl!("Movies, audio and stills"), crate::icons::Icon::Film),
+-        (tl!("Bars and Tone"), "file.newBarsAndTone", tl!("SMPTE HD bars, 1 kHz tone"), crate::icons::Icon::Grid),
++    let actions = [
++        (tl!("New Project"), "file.newProject", crate::icons::Icon::Plus),
++        (tl!("Open Project…"), "file.open", crate::icons::Icon::Folder),
++        (tl!("Import Media…"), "file.import", crate::icons::Icon::Import),
++        (tl!("Bars and Tone"), "file.newBarsAndTone", crate::icons::Icon::Grid),
+     ];
+-    let cw = 220.0;
+-    for (i, (title, cmd, sub, icon)) in cards.iter().enumerate() {
+-        let r = Rect::from_min_size(rect.min + vec2(28.0 + i as f32 * (cw + 14.0), 98.0), vec2(cw, 116.0));
++    let mut x = col.min.x;
++    let h = d::metric::CONTROL_H_LARGE;
++    for (i, (title, cmd, icon)) in actions.iter().enumerate() {
++        let primary = i == 0;
++        let galley = ui.painter().layout_no_wrap(title.to_string(), Tokens::semibold(d::size::BODY), t.text);
++        let w = galley.size().x + d::metric::ICON + d::space::XS + 2.0 * d::space::M;
++        let r = Rect::from_min_size(pos2(x, y), vec2(w, h));
+         let resp = ui.interact(r, egui::Id::unique(("imp", *cmd)), Sense::click());
+         app.auto.add(&format!("import.{cmd}"), r, title);
+-        let primary = i == 0;
+-        ui.painter().rect_filled(r, 14.0, if resp.hovered() { t.hover } else { t.tl_header_bg });
+-        ui.painter().rect_stroke(r, 14.0, egui::Stroke::new(1.0, Color32::from_white_alpha(if resp.hovered() { 34 } else { 16 })), egui::StrokeKind::Inside);
+-        let well = Rect::from_min_size(r.min + vec2(16.0, 16.0), vec2(36.0, 36.0));
+-        ui.painter().rect_filled(well, 10.0, if primary { t.accent } else { t.pressed });
+-        crate::icons::paint(ui.painter(), well.shrink(9.0), *icon, if primary { Color32::WHITE } else { t.text });
+-        ui.painter().text(r.min + vec2(16.0, 76.0), Align2::LEFT_CENTER, *title, Tokens::semibold(14.0), t.text);
+-        ui.painter().text(r.min + vec2(16.0, 96.0), Align2::LEFT_CENTER, *sub, Tokens::ui(11.5), t.text_dim);
++        let ink = if primary { Color32::WHITE } else { t.text };
++        if primary {
++            let fill = if resp.is_pointer_button_down_on() { pal.accent } else if resp.hovered() { t.accent_hover } else { pal.accent_fill };
++            ui.painter().rect_filled(r, d::cr(d::radius::CONTROL + 2.0), fill);
++            // the glass highlight on the primary button too, so it reads as the same material
++            d::paint_pane_rim(ui.painter(), r, d::radius::CONTROL + 2.0, pal);
++        } else {
++            d::paint_glass(ui.painter(), r, d::radius::CONTROL + 2.0, Glass::Bar, pal);
++            if resp.hovered() {
++                ui.painter().rect_filled(r, d::cr(d::radius::CONTROL + 2.0), if dark { Color32::from_white_alpha(10) } else { Color32::from_black_alpha(10) });
++            }
++        }
++        let ir = Rect::from_center_size(pos2(r.min.x + d::space::M + d::metric::ICON / 2.0, r.center().y), vec2(d::metric::ICON, d::metric::ICON));
++        crate::icons::paint(ui.painter(), ir, *icon, ink);
++        ui.painter().galley_with_override_text_color(pos2(ir.max.x + d::space::XS, r.center().y - galley.size().y / 2.0), galley, ink);
++        if resp.hovered() {
++            ui.ctx().set_cursor_icon(egui::CursorIcon::PointingHand);
++        }
+         if resp.clicked() {
+             let _ = crate::menus::invoke(app, &ctx, cmd, json!({}));
+             app.ui.mode = crate::state::Mode::Edit;
+         }
++        x = r.max.x + d::space::S;
+     }
++    y += h + d::space::XL + d::space::XS;
+     // RNG patch: the upstream Community links (Discord, ArtCraft sites) are left off CutCat's Home.
+-    recent(app, ui, rect, 98.0 + 116.0 + 40.0);
++    recent(app, ui, col, y);
+ }
+ 
+ /// Recent projects listed on Home, as in File ▸ Open Recent.
+ const RECENT_ROWS: usize = 6;
+-const RECENT_ROW_H: f32 = 28.0;
++const RECENT_ROW_H: f32 = 36.0;
+ 
+ /// Home's Recent list at `y`: the recent projects (newest first, file name with its folder beside
+ /// it), a click opens one. Returns where the next section starts.
+-fn recent(app: &mut FilmcraftApp, ui: &mut egui::Ui, rect: Rect, y: f32) -> f32 {
++fn recent(app: &mut FilmcraftApp, ui: &mut egui::Ui, col: Rect, y: f32) -> f32 {
++    use crate::rng_design as d;
+     let paths: Vec<String> = app.session.prefs.general.recent_projects.iter().take(RECENT_ROWS).cloned().collect();
++    let t = app.tokens;
++    let pal = d::palette(t.kind != crate::theme::ThemeKind::Light);
++    ui.painter().text(pos2(col.min.x, y + 10.0), Align2::LEFT_CENTER, tl!("Recent"), Tokens::semibold(d::size::TITLE2), t.text);
++    let top = y + 20.0 + d::space::S;
++    let rows = paths.len().max(1) as f32;
++    let pane = Rect::from_min_size(pos2(col.min.x, top), vec2(col.width(), rows * RECENT_ROW_H + 2.0 * d::space::XS));
++    d::paint_glass(ui.painter(), pane, d::radius::CARD, d::Glass::Sidebar, pal);
+     if paths.is_empty() {
+-        return y;
++        ui.painter().text(
++            pos2(pane.min.x + d::space::M, pane.center().y),
++            Align2::LEFT_CENTER,
++            tl!("Projects you open or save appear here."),
++            Tokens::ui(d::size::BODY),
++            t.text_dim,
++        );
++        return pane.max.y + d::space::XL;
+     }
+-    let t = app.tokens;
+-    ui.painter().text(rect.min + vec2(24.0, y), Align2::LEFT_CENTER, tl!("Recent"), Tokens::semibold(15.0), t.text);
+     let mut open = None;
+     for (i, path) in paths.iter().enumerate() {
+-        let row =
+-            Rect::from_min_size(rect.min + vec2(16.0, y + 16.0 + i as f32 * RECENT_ROW_H), vec2(560.0_f32.min(rect.width() - 32.0).max(0.0), RECENT_ROW_H));
++        let row = Rect::from_min_size(pos2(pane.min.x + d::space::XS, pane.min.y + d::space::XS + i as f32 * RECENT_ROW_H), vec2(pane.width() - 2.0 * d::space::XS, RECENT_ROW_H));
+         let name = crate::menus::recent_name(path);
+         let resp = ui.interact(row, egui::Id::unique(("imp-recent", i)), Sense::click()).on_hover_text(path.as_str());
+         app.auto.add(&format!("import.recent.{i}"), row, &name);
+         if resp.hovered() {
+-            ui.painter().rect_filled(row, 4.0, t.hover);
++            ui.painter().rect_filled(row, d::cr(d::radius::CONTROL), t.hover);
+         }
+         let p = ui.painter().with_clip_rect(row);
+-        crate::icons::paint(&p, Rect::from_center_size(pos2(row.min.x + 16.0, row.center().y), vec2(14.0, 14.0)), crate::icons::Icon::Sequence, t.text_dim);
+-        let name_r = p.text(pos2(row.min.x + 32.0, row.center().y), Align2::LEFT_CENTER, &name, Tokens::ui(13.0), t.text);
++        crate::icons::paint(&p, Rect::from_center_size(pos2(row.min.x + d::space::S + 8.0, row.center().y), vec2(d::metric::ICON, d::metric::ICON)), crate::icons::Icon::Sequence, t.text_dim);
++        let name_r = p.text(pos2(row.min.x + 44.0, row.center().y), Align2::LEFT_CENTER, &name, Tokens::ui(d::size::BODY), t.text);
+         if let Some(folder) = std::path::Path::new(path).parent() {
+-            p.text(pos2(name_r.max.x + 12.0, row.center().y), Align2::LEFT_CENTER, folder.to_string_lossy(), Tokens::ui(11.5), t.text_dim);
++            p.text(pos2(name_r.max.x + d::space::S, row.center().y), Align2::LEFT_CENTER, folder.to_string_lossy(), Tokens::ui(d::size::CAPTION), t.text_dim);
+         }
+         if resp.clicked() {
+             open = Some(path.clone());
+@@ -94,5 +132,5 @@ fn recent(app: &mut FilmcraftApp, ui: &mut egui::Ui, rect: Rect, y: f32) -> f32
+             app.ui.mode = crate::state::Mode::Edit;
+         }
+     }
+-    y + 16.0 + paths.len() as f32 * RECENT_ROW_H + 36.0
++    pane.max.y + d::space::XL
+ }
+diff --git a/crates/ui-egui/src/panels/project_views.rs b/crates/ui-egui/src/panels/project_views.rs
+index 6ac41ad6..f180edae 100644
+--- a/crates/ui-egui/src/panels/project_views.rs
++++ b/crates/ui-egui/src/panels/project_views.rs
+@@ -15,7 +15,8 @@ use crate::panels::project::{Actions, Hover, Inst, View, commit_rename, font, op
+ use crate::theme::Tokens;
+ 
+ const OFFLINE: Color32 = Color32::from_rgb(0xe8, 0x5c, 0x5c);
+-const BIN_COLOR: Color32 = Color32::from_rgb(237, 150, 58);
++// RNG Design: bins in the warm cream of the RNG palette, not Premiere's orange
++const BIN_COLOR: Color32 = Color32::from_rgb(0xd2, 0xc2, 0xae);
+ /// Width of the label chip lead-in before the Name column.
+ const LEAD: f32 = 26.0;
+ 
+@@ -1058,8 +1059,10 @@ fn bin_card(app: &mut FilmcraftApp, ui: &mut egui::Ui, r: Rect, b: &Bin, v: &Vie
+     if selected {
+         ui.painter().rect_stroke(bg, 4.0, Stroke::new(1.5, t.accent), StrokeKind::Inside);
+     }
+-    ui.painter().rect_filled(th, 2.0, Color32::from_gray(26));
+-    icons::paint(ui.painter(), Rect::from_center_size(th.center(), vec2(th.height() * 0.6, th.height() * 0.6)), Icon::Folder, BIN_COLOR);
++    // RNG Design: the bin's well follows the theme (it was a fixed near-black)
++    ui.painter().rect_filled(th, crate::rng_design::radius::SMALL, t.control_surface);
++    let bin_ink = if t.kind == crate::theme::ThemeKind::Light { Color32::from_rgb(0x9a, 0x84, 0x68) } else { BIN_COLOR };
++    icons::paint(ui.painter(), Rect::from_center_size(th.center(), vec2(th.height() * 0.6, th.height() * 0.6)), Icon::Folder, bin_ink);
+     let mut n = Vec::new();
+     b.all_items(&mut n);
+     let f = font(app);
+diff --git a/crates/ui-egui/src/panels/tools.rs b/crates/ui-egui/src/panels/tools.rs
+index 64911c27..55d6af53 100644
+--- a/crates/ui-egui/src/panels/tools.rs
++++ b/crates/ui-egui/src/panels/tools.rs
+@@ -79,11 +79,13 @@ pub fn show(app: &mut FilmcraftApp, ui: &mut egui::Ui, rect: Rect) {
+         }
+         let active = group.contains(&app.ui.tool);
+         if active {
+-            ui.painter().rect_filled(Rect::from_center_size(r.center(), vec2(26.0, 26.0)), 4.0, t.accent);
++            // RNG Design: the active tool is a tinted well with a red glyph, not a solid red block
++            let pal = crate::rng_design::palette(t.kind != crate::theme::ThemeKind::Light);
++            ui.painter().rect_filled(Rect::from_center_size(r.center(), vec2(28.0, 28.0)), crate::rng_design::radius::CONTROL, pal.accent_tint);
+         } else if resp.hovered() {
+-            ui.painter().rect_filled(r, 4.0, t.hover);
++            ui.painter().rect_filled(r, crate::rng_design::radius::CONTROL, t.hover);
+         }
+-        icons::paint(ui.painter(), Rect::from_center_size(r.center(), vec2(17.0, 17.0)), current.icon(), if active { egui::Color32::WHITE } else { t.icon });
++        icons::paint(ui.painter(), Rect::from_center_size(r.center(), vec2(17.0, 17.0)), current.icon(), if active { t.accent } else { t.icon });
+         if resp.has_focus() {
+             ui.painter().rect_stroke(r.shrink(2.0), 4.0, egui::Stroke::new(1.5, t.focus), egui::StrokeKind::Inside);
+         }
+diff --git a/crates/ui-egui/src/rng_design.rs b/crates/ui-egui/src/rng_design.rs
+new file mode 100644
+index 00000000..612d4e61
+--- /dev/null
++++ b/crates/ui-egui/src/rng_design.rs
+@@ -0,0 +1,380 @@
++//! RNG Design tokens: one file shared byte-for-byte by every RNG Studio app (CutCat, PhotoFalcon,
++//! PDFrog, DocDuck, SlideSeal, RNG Studio). Source of truth: rng-app-builds/design/rng_design.rs,
++//! spec: rng-app-builds/docs/RNG_DESIGN.md. Copy with scripts/sync-design.sh; don't edit per app.
++#![allow(dead_code)]
++
++use egui::{Color32, CornerRadius, Shadow, Stroke};
++
++/// One appearance's colours (spec §2).
++#[derive(Clone, Copy, Debug, PartialEq)]
++pub struct Palette {
++    pub dark: bool,
++    pub canvas: Color32,
++    pub base: Color32,
++    pub panel: Color32,
++    pub raised: Color32,
++    pub control: Color32,
++    pub hover: Color32,
++    pub pressed: Color32,
++    pub separator: Color32,
++    pub border: Color32,
++    pub text: Color32,
++    pub text_secondary: Color32,
++    pub text_tertiary: Color32,
++    pub accent: Color32,
++    pub accent_fill: Color32,
++    pub accent_text: Color32,
++    pub accent_tint: Color32,
++    pub value: Color32,
++    pub success: Color32,
++    pub warning: Color32,
++    pub danger: Color32,
++    /// Rim of floating surfaces (popovers, dialogs, HUDs).
++    pub rim: Color32,
++}
++
++const fn hex(v: u32) -> Color32 {
++    Color32::from_rgb((v >> 16) as u8, (v >> 8) as u8, v as u8)
++}
++
++pub const DARK: Palette = Palette {
++    dark: true,
++    canvas: hex(0x0e0d0d),
++    base: hex(0x151414),
++    panel: hex(0x1c1b1a),
++    raised: hex(0x242322),
++    control: hex(0x2c2a29),
++    hover: hex(0x33312f),
++    pressed: hex(0x3d3a38),
++    separator: hex(0x2a2827),
++    border: hex(0x3a3735),
++    text: hex(0xf3eee8),
++    text_secondary: hex(0xaaa49d),
++    text_tertiary: hex(0x7d7871),
++    accent: hex(0xff453a),
++    accent_fill: hex(0xd92b20),
++    accent_text: hex(0xff6961),
++    // accent at 16 % over `panel`, premultiplied into an opaque colour so it never stacks
++    accent_tint: hex(0x3e1f1c),
++    value: hex(0xe8b85c),
++    success: hex(0x32d74b),
++    warning: hex(0xffb340),
++    danger: hex(0xff6961),
++    rim: Color32::from_rgba_premultiplied(20, 20, 20, 20),
++};
++
++pub const LIGHT: Palette = Palette {
++    dark: false,
++    canvas: hex(0xe8e5e1),
++    base: hex(0xf3f1ee),
++    panel: hex(0xfbfaf8),
++    raised: hex(0xffffff),
++    control: hex(0xefece8),
++    hover: hex(0xe6e2dd),
++    pressed: hex(0xdbd6d0),
++    separator: hex(0xe3ded8),
++    border: hex(0xcdc7c0),
++    text: hex(0x1d1b19),
++    text_secondary: hex(0x5f5a54),
++    text_tertiary: hex(0x8a847c),
++    accent: hex(0xd70015),
++    accent_fill: hex(0xd70015),
++    accent_text: hex(0xc4000f),
++    // accent at 12 % over `panel`
++    accent_tint: hex(0xf8dcdb),
++    value: hex(0x946510),
++    success: hex(0x1f8f3a),
++    warning: hex(0xa05a00),
++    danger: hex(0xc4000f),
++    rim: Color32::from_rgba_premultiplied(0, 0, 0, 20),
++};
++
++pub fn palette(dark: bool) -> &'static Palette {
++    if dark { &DARK } else { &LIGHT }
++}
++
++/// Type scale in points (spec §3).
++pub mod size {
++    pub const LARGE_TITLE: f32 = 26.0;
++    pub const TITLE1: f32 = 20.0;
++    pub const TITLE2: f32 = 15.0;
++    pub const HEADLINE: f32 = 13.0;
++    pub const BODY: f32 = 13.0;
++    pub const BODY_DENSE: f32 = 12.0;
++    pub const CALLOUT: f32 = 12.0;
++    pub const CAPTION: f32 = 11.0;
++    pub const MICRO: f32 = 10.0;
++}
++
++/// 8 pt grid (spec §4).
++pub mod space {
++    pub const XXS: f32 = 4.0;
++    pub const XS: f32 = 8.0;
++    pub const S: f32 = 12.0;
++    pub const M: f32 = 16.0;
++    pub const L: f32 = 24.0;
++    pub const XL: f32 = 32.0;
++    pub const XXL: f32 = 48.0;
++}
++
++/// Control and bar metrics (spec §4).
++pub mod metric {
++    pub const CONTROL_H: f32 = 28.0;
++    pub const CONTROL_H_DENSE: f32 = 24.0;
++    pub const CONTROL_H_LARGE: f32 = 32.0;
++    pub const TOOLBAR_H: f32 = 40.0;
++    pub const TOOLBAR_H_DENSE: f32 = 36.0;
++    pub const TAB_H: f32 = 30.0;
++    pub const STATUS_H: f32 = 22.0;
++    pub const SIDEBAR_W: f32 = 232.0;
++    pub const INSPECTOR_W: f32 = 296.0;
++    pub const ROW_H: f32 = 28.0;
++    pub const ROW_H_DENSE: f32 = 24.0;
++    pub const ICON: f32 = 16.0;
++    pub const ICON_DENSE: f32 = 14.0;
++    pub const ICON_LARGE: f32 = 20.0;
++}
++
++/// Corner radii (spec §4).
++pub mod radius {
++    pub const SMALL: f32 = 4.0;
++    pub const CONTROL: f32 = 6.0;
++    pub const CARD: f32 = 10.0;
++    pub const WINDOW: f32 = 14.0;
++}
++
++/// Motion in seconds (spec §9).
++pub mod motion {
++    pub const FAST: f32 = 0.12;
++    pub const MEDIUM: f32 = 0.18;
++    pub const SLOW: f32 = 0.24;
++}
++
++pub fn cr(r: f32) -> CornerRadius {
++    CornerRadius::same(r.round() as u8)
++}
++
++/// Floating-layer shadows (spec §5).
++pub fn popover_shadow(p: &Palette) -> Shadow {
++    Shadow { offset: [0, 8], blur: 24, spread: 0, color: Color32::from_black_alpha(if p.dark { 102 } else { 40 }) }
++}
++pub fn dialog_shadow(p: &Palette) -> Shadow {
++    Shadow { offset: [0, 16], blur: 48, spread: 0, color: Color32::from_black_alpha(if p.dark { 128 } else { 56 }) }
++}
++
++/// Popover fill: `raised` at 96 % (the "glass" without a blur egui can't do).
++pub fn popover_fill(p: &Palette) -> Color32 {
++    Color32::from_rgba_unmultiplied(p.raised.r(), p.raised.g(), p.raised.b(), 245)
++}
++pub fn rim_stroke(p: &Palette) -> Stroke {
++    Stroke::new(1.0, if p.dark { Color32::from_white_alpha(20) } else { Color32::from_black_alpha(20) })
++}
++
++/// Keyboard focus ring: 2 px accent.
++pub fn focus_stroke(p: &Palette) -> Stroke {
++    Stroke::new(2.0, p.accent)
++}
++
++/// egui visuals for an app that has no richer theme of its own (spec §2, §5, §9). Apps with their
++/// own token struct map these values in their theme.rs instead.
++pub fn visuals(p: &Palette) -> egui::Visuals {
++    let mut v = if p.dark { egui::Visuals::dark() } else { egui::Visuals::light() };
++    v.panel_fill = p.panel;
++    v.window_fill = popover_fill(p);
++    v.extreme_bg_color = p.base;
++    v.faint_bg_color = p.raised;
++    v.code_bg_color = p.control;
++    v.override_text_color = Some(p.text);
++    v.weak_text_color = Some(p.text_secondary);
++    v.hyperlink_color = p.accent_text;
++    v.warn_fg_color = p.warning;
++    v.error_fg_color = p.danger;
++    v.selection.bg_fill = p.accent_tint;
++    v.selection.stroke = Stroke::new(1.0, p.accent);
++    v.window_stroke = rim_stroke(p);
++    v.window_corner_radius = cr(radius::WINDOW);
++    v.menu_corner_radius = cr(radius::CARD);
++    v.window_shadow = dialog_shadow(p);
++    v.popup_shadow = popover_shadow(p);
++    v.striped = false;
++    v.slider_trailing_fill = true;
++    let w = &mut v.widgets;
++    for s in [&mut w.noninteractive, &mut w.inactive, &mut w.hovered, &mut w.active, &mut w.open] {
++        s.corner_radius = cr(radius::CONTROL);
++        s.expansion = 0.0;
++    }
++    w.noninteractive.bg_fill = p.panel;
++    w.noninteractive.weak_bg_fill = p.panel;
++    w.noninteractive.bg_stroke = Stroke::new(1.0, p.separator);
++    w.noninteractive.fg_stroke = Stroke::new(1.0, p.text_secondary);
++    w.inactive.bg_fill = p.control;
++    w.inactive.weak_bg_fill = p.control;
++    w.inactive.bg_stroke = Stroke::NONE;
++    w.inactive.fg_stroke = Stroke::new(1.0, p.text);
++    w.hovered.bg_fill = p.hover;
++    w.hovered.weak_bg_fill = p.hover;
++    w.hovered.bg_stroke = Stroke::NONE;
++    w.hovered.fg_stroke = Stroke::new(1.0, p.text);
++    w.active.bg_fill = p.pressed;
++    w.active.weak_bg_fill = p.pressed;
++    w.active.bg_stroke = Stroke::NONE;
++    w.active.fg_stroke = Stroke::new(1.0, p.text);
++    w.open.bg_fill = p.hover;
++    w.open.weak_bg_fill = p.hover;
++    w.open.bg_stroke = Stroke::NONE;
++    w.open.fg_stroke = Stroke::new(1.0, p.text);
++    v
++}
++
++/// Spacing for the egui style (spec §4).
++pub fn apply_spacing(s: &mut egui::Style) {
++    s.spacing.item_spacing = egui::vec2(space::XS, space::XXS + 2.0);
++    s.spacing.button_padding = egui::vec2(space::S, space::XXS + 1.0);
++    s.spacing.interact_size.y = metric::CONTROL_H_DENSE;
++    s.spacing.menu_margin = egui::Margin::same(6);
++    s.spacing.window_margin = egui::Margin::same(space::M as i8);
++    s.animation_time = motion::FAST;
++}
++
++/// RNG Glass (spec §5): which pane of glass.
++#[derive(Clone, Copy, Debug, PartialEq, Eq)]
++pub enum Glass {
++    Bar,
++    Sidebar,
++    Popover,
++    Hud,
++    Dialog,
++}
++
++impl Glass {
++    fn alpha(self) -> u8 {
++        match self {
++            Glass::Bar => 219,
++            Glass::Sidebar => 230,
++            Glass::Popover => 240,
++            Glass::Hud => 184,
++            Glass::Dialog => 245,
++        }
++    }
++    fn floating(self) -> bool {
++        matches!(self, Glass::Popover | Glass::Hud | Glass::Dialog)
++    }
++}
++
++/// The glass fill colour for `kind` (unmultiplied alpha over the backdrop).
++pub fn glass_fill(p: &Palette, kind: Glass) -> Color32 {
++    let c = if matches!(kind, Glass::Popover | Glass::Dialog) { p.raised } else { p.panel };
++    Color32::from_rgba_unmultiplied(c.r(), c.g(), c.b(), kind.alpha())
++}
++
++/// Paints one pane of glass: shadow (floating only), tinted fill, side rim, specular top highlight
++/// and (dark) a darker bottom edge. Draw content on top afterwards.
++pub fn paint_glass(painter: &egui::Painter, rect: egui::Rect, r: f32, kind: Glass, p: &Palette) {
++    let radius = cr(r);
++    if kind.floating() {
++        let sh = if kind == Glass::Dialog { dialog_shadow(p) } else { popover_shadow(p) };
++        painter.add(sh.as_shape(rect, radius));
++    }
++    painter.rect_filled(rect, radius, glass_fill(p, kind));
++    let side = if p.dark { Color32::from_white_alpha(14) } else { Color32::from_black_alpha(18) };
++    painter.rect_stroke(rect, radius, Stroke::new(1.0, side), egui::StrokeKind::Inside);
++    // specular highlight along the top edge, inset by the corner radius so it follows the curve
++    let hi = if p.dark { Color32::from_white_alpha(40) } else { Color32::from_white_alpha(180) };
++    let inset = r.max(2.0);
++    let y = rect.top() + 0.5;
++    let x0 = rect.left() + inset;
++    let x1 = rect.right() - inset;
++    if x1 > x0 {
++        let mid = (x0 + x1) * 0.5;
++        let mut mesh = egui::Mesh::default();
++        let fade = Color32::TRANSPARENT;
++        // two quads: transparent → highlight → transparent, 1 px tall
++        for (a, b, ca, cb) in [(x0, mid, fade, hi), (mid, x1, hi, fade)] {
++            let i = mesh.vertices.len() as u32;
++            mesh.colored_vertex(egui::pos2(a, y - 0.5), ca);
++            mesh.colored_vertex(egui::pos2(b, y - 0.5), cb);
++            mesh.colored_vertex(egui::pos2(b, y + 0.5), cb);
++            mesh.colored_vertex(egui::pos2(a, y + 0.5), ca);
++            mesh.add_triangle(i, i + 1, i + 2);
++            mesh.add_triangle(i, i + 2, i + 3);
++        }
++        painter.add(egui::Shape::mesh(mesh));
++    }
++    if p.dark && kind.floating() {
++        let y = rect.bottom() - 0.5;
++        painter.line_segment(
++            [egui::pos2(rect.left() + inset, y), egui::pos2(rect.right() - inset, y)],
++            Stroke::new(1.0, Color32::from_black_alpha(64)),
++        );
++    }
++}
++
++/// The window backdrop the glass sits on: `canvas` with a soft warm glow toward the top centre.
++pub fn paint_backdrop(painter: &egui::Painter, rect: egui::Rect, p: &Palette) {
++    painter.rect_filled(rect, CornerRadius::ZERO, p.canvas);
++    let glow = if p.dark { Color32::from_rgba_unmultiplied(0x6b, 0x55, 0x48, 26) } else { Color32::from_rgba_unmultiplied(0xff, 0xff, 0xff, 120) };
++    let c = egui::pos2(rect.center().x, rect.top() - rect.height() * 0.15);
++    let rad = rect.width().max(rect.height()) * 0.75;
++    // radial glow as a fan of triangles: centre opaque, rim transparent
++    let mut mesh = egui::Mesh::default();
++    mesh.colored_vertex(c, glow);
++    let n = 48u32;
++    for k in 0..=n {
++        let a = std::f32::consts::TAU * k as f32 / n as f32;
++        mesh.colored_vertex(c + egui::vec2(a.cos(), a.sin()) * rad, Color32::TRANSPARENT);
++    }
++    for k in 1..=n {
++        mesh.add_triangle(0, k, k + 1);
++    }
++    painter.with_clip_rect(rect).add(egui::Shape::mesh(mesh));
++}
++
++/// Rounds the corners of an already-painted square pane by painting `backdrop` outside a radius-`r`
++/// arc in each corner (for docked panels drawn by code that only paints rectangles).
++pub fn paint_corner_mask(painter: &egui::Painter, rect: egui::Rect, r: f32, backdrop: Color32) {
++    let corners = [
++        (rect.left_top(), egui::vec2(1.0, 1.0)),
++        (rect.right_top(), egui::vec2(-1.0, 1.0)),
++        (rect.right_bottom(), egui::vec2(-1.0, -1.0)),
++        (rect.left_bottom(), egui::vec2(1.0, -1.0)),
++    ];
++    for (corner, dir) in corners {
++        let centre = corner + dir * r;
++        let mut mesh = egui::Mesh::default();
++        mesh.colored_vertex(corner, backdrop);
++        let n = 8u32;
++        for k in 0..=n {
++            let a = std::f32::consts::FRAC_PI_2 * k as f32 / n as f32;
++            // from the edge point beside the corner along x, round to the edge point along y
++            let v = egui::vec2(-dir.x * a.cos(), -dir.y * a.sin());
++            mesh.colored_vertex(centre + v * r, backdrop);
++        }
++        for k in 1..=n {
++            mesh.add_triangle(0, k, k + 1);
++        }
++        painter.add(egui::Shape::mesh(mesh));
++    }
++}
++
++/// Specular rim for a docked pane: 1 px highlight across the top edge plus a faint side rim.
++pub fn paint_pane_rim(painter: &egui::Painter, rect: egui::Rect, r: f32, p: &Palette) {
++    let side = if p.dark { Color32::from_white_alpha(12) } else { Color32::from_black_alpha(16) };
++    painter.rect_stroke(rect, cr(r), Stroke::new(1.0, side), egui::StrokeKind::Inside);
++    let hi = if p.dark { Color32::from_white_alpha(34) } else { Color32::from_white_alpha(200) };
++    let y = rect.top() + 0.5;
++    let (x0, x1) = (rect.left() + r, rect.right() - r);
++    if x1 > x0 {
++        let mid = (x0 + x1) * 0.5;
++        let mut mesh = egui::Mesh::default();
++        for (a, b, ca, cb) in [(x0, mid, Color32::TRANSPARENT, hi), (mid, x1, hi, Color32::TRANSPARENT)] {
++            let i = mesh.vertices.len() as u32;
++            mesh.colored_vertex(egui::pos2(a, y - 0.5), ca);
++            mesh.colored_vertex(egui::pos2(b, y - 0.5), cb);
++            mesh.colored_vertex(egui::pos2(b, y + 0.5), cb);
++            mesh.colored_vertex(egui::pos2(a, y + 0.5), ca);
++            mesh.add_triangle(i, i + 1, i + 2);
++            mesh.add_triangle(i, i + 2, i + 3);
++        }
++        painter.add(egui::Shape::mesh(mesh));
++    }
++}
+diff --git a/crates/ui-egui/src/theme.rs b/crates/ui-egui/src/theme.rs
+index 08279b70..a54478c2 100644
+--- a/crates/ui-egui/src/theme.rs
++++ b/crates/ui-egui/src/theme.rs
+@@ -154,34 +154,35 @@ impl Tokens {
+         // CutCat (RNG) "glass" dark: soft graphite layers, Apple system red used sparingly (accent,
+         // playhead), neutral track targets, gold timecode, rounder controls.
+         // Upstream measured these from Premiere 26 "Darkest" (plan/premiere/02-ui-ux.md §1).
++        use crate::rng_design::{self, DARK as D, LIGHT as L};
+         let dark = Tokens {
+             kind,
+-            app_bg: Color32::from_rgb(0x09, 0x09, 0x0b),
+-            header_bg: Color32::from_rgb(0x14, 0x14, 0x17),
+-            panel_bg: Color32::from_rgb(0x1b, 0x1b, 0x1f),
+-            tab_bg: Color32::from_rgb(0x1b, 0x1b, 0x1f),
+-            tab_text: Color32::from_rgb(0x8a, 0x8a, 0x93),
+-            tab_text_active: Color32::from_rgb(0xf2, 0xf2, 0xf4),
+-            focus: Color32::from_rgb(0x4a, 0x4a, 0x52),
+-            accent: Color32::from_rgb(0xff, 0x45, 0x3a),
+-            accent_hover: Color32::from_rgb(0xff, 0x5c, 0x52),
+-            text: Color32::from_rgb(0xe4, 0xe4, 0xe7),
+-            text_dim: Color32::from_rgb(0xa1, 0xa1, 0xaa),
+-            text_faint: Color32::from_rgb(0x62, 0x62, 0x6b),
+-            icon: Color32::from_rgb(0xa1, 0xa1, 0xaa),
+-            icon_active: Color32::from_rgb(0xf2, 0xf2, 0xf4),
+-            hover: Color32::from_rgb(0x2a, 0x2a, 0x2f),
+-            pressed: Color32::from_rgb(0x36, 0x36, 0x3c),
+-            field_bg: Color32::from_rgb(0x13, 0x13, 0x16),
+-            field_border: Color32::from_rgb(0x30, 0x30, 0x36),
+-            separator: Color32::from_rgb(0x28, 0x28, 0x2d),
+-            row_alt: Color32::from_rgb(0x1f, 0x1f, 0x23),
+-            row_selected: Color32::from_rgb(0x34, 0x34, 0x3b),
+-            hot_text: Color32::from_rgb(0xe8, 0xc5, 0x8c),
+-            pill_active_bg: Color32::from_rgb(0x34, 0x34, 0x3b),
+-            clip_bar_bg: Color32::from_rgb(58, 58, 70),
+-            control_surface: Color32::from_rgb(0x1d, 0x1d, 0x21),
+-            control_well: Color32::from_rgb(0x0c, 0x0c, 0x0f),
++            app_bg: D.canvas,
++            header_bg: D.base,
++            panel_bg: D.panel,
++            tab_bg: D.panel,
++            tab_text: D.text_secondary,
++            tab_text_active: D.text,
++            focus: D.border,
++            accent: D.accent,
++            accent_hover: D.accent_text,
++            text: D.text,
++            text_dim: D.text_secondary,
++            text_faint: D.text_tertiary,
++            icon: D.text_secondary,
++            icon_active: D.text,
++            hover: D.hover,
++            pressed: D.pressed,
++            field_bg: D.base,
++            field_border: D.border,
++            separator: D.separator,
++            row_alt: Color32::from_rgb(0x20, 0x1f, 0x1e),
++            row_selected: D.pressed,
++            hot_text: D.value,
++            pill_active_bg: D.pressed,
++            clip_bar_bg: Color32::from_rgb(0x4a, 0x45, 0x42),
++            control_surface: D.raised,
++            control_well: D.canvas,
+             control_border: Color32::from_rgb(0x50, 0x50, 0x50),
+             control_handle_bg: Color32::from_rgb(0x2a, 0x2a, 0x2a),
+             control_handle: Color32::from_rgb(0xe0, 0xe0, 0xe0),
+@@ -214,32 +215,32 @@ impl Tokens {
+             switch_border: Color32::from_gray(138),
+             slider_disabled_track: Color32::from_gray(74),
+             slider_disabled_knob: Color32::from_gray(106),
+-            button_hover: Color32::from_rgb(0x26, 0x26, 0x2c),
+-            button_border: Color32::from_rgb(0x38, 0x38, 0x40),
+-            caption_track_bg: Color32::from_rgb(0x23, 0x20, 0x2a),
+-            scroll_thumb: Color32::from_rgb(0x3a, 0x3a, 0x42),
+-            scroll_thumb_hover: Color32::from_rgb(0x5a, 0x5a, 0x64),
+-            vertical_scroll_thumb: Color32::from_rgb(0x3a, 0x3a, 0x42),
++            button_hover: D.hover,
++            button_border: D.border,
++            caption_track_bg: Color32::from_rgb(0x26, 0x22, 0x20),
++            scroll_thumb: D.border,
++            scroll_thumb_hover: Color32::from_rgb(0x5a, 0x56, 0x52),
++            vertical_scroll_thumb: D.border,
+             disabled_clip_bg: Color32::from_gray(0x2a),
+-            tl_bg: Color32::from_rgb(0x17, 0x17, 0x1a),
+-            tl_track_bg: Color32::from_rgb(0x1b, 0x1b, 0x1f),
+-            tl_track_bg_alt: Color32::from_rgb(0x1b, 0x1b, 0x1f),
+-            tl_header_bg: Color32::from_rgb(0x1f, 0x1f, 0x23),
+-            tl_ruler_bg: Color32::from_rgb(0x17, 0x17, 0x1a),
+-            tl_ruler_tick: Color32::from_rgb(0x5c, 0x5c, 0x66),
+-            tl_ruler_text: Color32::from_rgb(0x9a, 0x9a, 0xa3),
+-            playhead: Color32::from_rgb(0xff, 0x45, 0x3a),
+-            track_target: Color32::from_rgb(0x45, 0x45, 0x4d),
+-            in_out_shade: Color32::from_rgb(0x2c, 0x2c, 0x33),
++            tl_bg: D.base,
++            tl_track_bg: D.panel,
++            tl_track_bg_alt: D.panel,
++            tl_header_bg: D.raised,
++            tl_ruler_bg: D.base,
++            tl_ruler_tick: Color32::from_rgb(0x5e, 0x5a, 0x55),
++            tl_ruler_text: D.text_secondary,
++            playhead: D.accent,
++            track_target: Color32::from_rgb(0x4a, 0x46, 0x43),
++            in_out_shade: Color32::from_rgb(0x2e, 0x2b, 0x29),
+             clip_selected_border: Color32::from_rgb(0xeb, 0xeb, 0xeb),
+             render_red: Color32::from_rgb(0xe3, 0x48, 0x50),
+             render_yellow: Color32::from_rgb(0xf0, 0xf0, 0x4f),
+             render_green: Color32::from_rgb(0x2d, 0x9d, 0x78),
+-            monitor_bg: Color32::from_rgb(0x12, 0x12, 0x15),
+-            timecode: Color32::from_rgb(0xe8, 0xc5, 0x8c),
+-            danger: Color32::from_rgb(0xdc, 0x51, 0x3d),
++            monitor_bg: D.canvas,
++            timecode: D.value,
++            danger: D.danger,
+             radius: 0.0,
+-            radius_sm: 8.0,
++            radius_sm: rng_design::radius::CONTROL,
+             gap: 6.0,
+             tab_h: 32.0,
+         };
+@@ -262,74 +263,86 @@ impl Tokens {
+                 ..dark
+             },
+             ThemeKind::Light => Tokens {
+-                app_bg: Color32::from_rgb(180, 180, 180),
+-                header_bg: Color32::from_rgb(214, 214, 214),
+-                panel_bg: Color32::from_rgb(232, 232, 232),
+-                tab_bg: Color32::from_rgb(232, 232, 232),
+-                tab_text: Color32::from_rgb(90, 90, 90),
+-                tab_text_active: Color32::from_rgb(20, 20, 20),
+-                text: Color32::from_rgb(34, 34, 34),
+-                text_dim: Color32::from_rgb(90, 90, 90),
+-                text_faint: Color32::from_rgb(140, 140, 140),
+-                icon: Color32::from_rgb(60, 60, 60),
+-                hover: Color32::from_rgb(210, 210, 210),
+-                pressed: Color32::from_rgb(196, 196, 196),
+-                field_bg: Color32::from_rgb(250, 250, 250),
+-                field_border: Color32::from_rgb(170, 170, 170),
+-                separator: Color32::from_rgb(200, 200, 200),
+-                row_alt: Color32::from_rgb(224, 224, 224),
+-                row_selected: Color32::from_rgb(170, 200, 240),
+-                pill_active_bg: Color32::from_rgb(196, 196, 196),
+-                clip_bar_bg: Color32::from_rgb(190, 203, 224),
+-                control_surface: Color32::from_rgb(218, 218, 218),
+-                control_well: Color32::from_rgb(196, 196, 196),
+-                control_border: Color32::from_rgb(150, 150, 150),
+-                control_handle_bg: Color32::from_rgb(205, 205, 205),
+-                control_handle: Color32::from_rgb(50, 50, 50),
+-                control_handle_dim: Color32::from_rgb(85, 85, 85),
+-                plot_bg: Color32::from_rgb(245, 245, 245),
+-                plot_grid: Color32::from_rgb(210, 210, 210),
+-                plot_axis: Color32::from_rgb(170, 170, 170),
+-                plot_handle: Color32::from_rgb(50, 50, 50),
+-                plot_handle_dim: Color32::from_rgb(100, 100, 100),
+-                meter_bg: Color32::from_rgb(205, 205, 205),
+-                meter_readout_bg: Color32::from_rgb(218, 218, 218),
+-                meter_clip_off: Color32::from_rgb(155, 155, 155),
+-                panner_bg: Color32::from_gray(196),
+-                panner_border: Color32::from_gray(150),
+-                panner_speaker: Color32::from_gray(100),
+-                fader_knob: Color32::from_gray(140),
+-                eq_track: Color32::from_gray(196),
+-                eq_tick: Color32::from_gray(150),
+-                eq_knob: Color32::from_gray(85),
+-                eq_knob_active: Color32::from_gray(34),
+-                eq_node: Color32::from_gray(50),
+-                eq_node_off: Color32::from_gray(140),
+-                crossover_handle: Color32::from_gray(50),
+-                keyframe_plot_bg: Color32::from_gray(245),
+-                keyframe_plot_grid: Color32::from_gray(210),
+-                keyframe_plot_axis: Color32::from_gray(170),
+-                keyframe_handle: Color32::from_gray(50),
+-                switch_fill: Color32::from_gray(60),
+-                switch_knob: Color32::from_gray(232),
+-                switch_border: Color32::from_gray(110),
+-                slider_disabled_track: Color32::from_gray(190),
+-                slider_disabled_knob: Color32::from_gray(140),
+-                button_hover: Color32::from_gray(210),
+-                button_border: Color32::from_gray(170),
+-                icon_active: Color32::from_rgb(34, 34, 34),
+-                caption_track_bg: Color32::from_rgb(222, 215, 233),
+-                scroll_thumb: Color32::from_gray(150),
+-                scroll_thumb_hover: Color32::from_gray(130),
+-                vertical_scroll_thumb: Color32::from_gray(150),
+-                disabled_clip_bg: Color32::from_gray(190),
+-                in_out_shade: Color32::from_gray(185),
+-                tl_bg: Color32::from_rgb(210, 210, 210),
+-                tl_track_bg: Color32::from_rgb(222, 222, 222),
+-                tl_track_bg_alt: Color32::from_rgb(228, 228, 228),
+-                tl_header_bg: Color32::from_rgb(214, 214, 214),
+-                tl_ruler_bg: Color32::from_rgb(226, 226, 226),
+-                tl_ruler_text: Color32::from_rgb(80, 80, 80),
++                // RNG Design light (rng_design::LIGHT): warm paper, not Premiere's grey.
++                app_bg: L.canvas,
++                header_bg: L.base,
++                panel_bg: L.panel,
++                tab_bg: L.panel,
++                tab_text: L.text_secondary,
++                tab_text_active: L.text,
++                focus: L.border,
++                accent: L.accent,
++                accent_hover: L.accent_text,
++                text: L.text,
++                text_dim: L.text_secondary,
++                text_faint: L.text_tertiary,
++                icon: L.text_secondary,
++                icon_active: L.text,
++                hover: L.hover,
++                pressed: L.pressed,
++                field_bg: L.raised,
++                field_border: L.border,
++                separator: L.separator,
++                row_alt: Color32::from_rgb(0xf5, 0xf3, 0xf0),
++                row_selected: L.accent_tint,
++                hot_text: L.value,
++                timecode: L.value,
++                playhead: L.accent,
++                danger: L.danger,
++                pill_active_bg: L.pressed,
++                clip_bar_bg: Color32::from_rgb(0xd9, 0xd2, 0xcb),
++                control_surface: L.control,
++                control_well: L.pressed,
++                control_border: L.border,
++                control_handle_bg: L.raised,
++                control_handle: L.text,
++                control_handle_dim: L.text_secondary,
++                plot_bg: L.raised,
++                plot_grid: L.separator,
++                plot_axis: L.border,
++                plot_handle: L.text,
++                plot_handle_dim: L.text_secondary,
++                meter_bg: L.pressed,
++                meter_readout_bg: L.control,
++                meter_clip_off: L.border,
++                panner_bg: L.control,
++                panner_border: L.border,
++                panner_speaker: L.text_secondary,
++                fader_knob: L.text_tertiary,
++                eq_track: L.pressed,
++                eq_tick: L.border,
++                eq_knob: L.text_secondary,
++                eq_knob_active: L.text,
++                eq_node: L.text,
++                eq_node_off: L.text_tertiary,
++                crossover_handle: L.text,
++                keyframe_plot_bg: L.raised,
++                keyframe_plot_grid: L.separator,
++                keyframe_plot_axis: L.border,
++                keyframe_handle: L.text,
++                switch_fill: L.text,
++                switch_knob: L.raised,
++                switch_border: L.text_tertiary,
++                slider_disabled_track: L.pressed,
++                slider_disabled_knob: L.text_tertiary,
++                button_hover: L.hover,
++                button_border: L.border,
++                caption_track_bg: Color32::from_rgb(0xee, 0xe6, 0xdf),
++                scroll_thumb: L.border,
++                scroll_thumb_hover: L.text_tertiary,
++                vertical_scroll_thumb: L.border,
++                disabled_clip_bg: L.pressed,
++                in_out_shade: Color32::from_rgb(0xe4, 0xdc, 0xd4),
++                tl_bg: L.base,
++                tl_track_bg: L.panel,
++                tl_track_bg_alt: L.panel,
++                tl_header_bg: L.base,
++                tl_ruler_bg: L.raised,
++                tl_ruler_tick: L.text_tertiary,
++                tl_ruler_text: L.text_secondary,
++                track_target: Color32::from_rgb(0x7a, 0x6f, 0x65),
++                monitor_bg: L.canvas,
++                clip_selected_border: L.text,
+                 ..dark
+             },
+         }
+@@ -339,6 +352,9 @@ impl Tokens {
+     /// the focus outline, the playhead, timecodes, drag values and track targeting) and accessible
+     /// colour contrast (brighter secondary text and borders).
+     pub fn with_appearance(mut self, highlight: Option<[u8; 3]>, accessible_contrast: bool) -> Self {
++        // RNG Design: the default highlight (#ff453a) means "the theme's own red", which in Light is
++        // the deeper accessible red, so it must not retint Light's track targets and timecodes.
++        let highlight = highlight.filter(|h| !(self.kind == ThemeKind::Light && *h == [0xff, 0x45, 0x3a]));
+         if let Some([r, g, b]) = highlight {
+             let c = Color32::from_rgb(r, g, b);
+             // A highlight of the user's own also colours the theme's other blues: the same hue, as
+@@ -474,15 +490,17 @@ pub fn apply_visuals(ctx: &egui::Context, t: &Tokens) {
+     v.selection.stroke = Stroke::new(1.0, Color32::WHITE);
+     v.hyperlink_color = t.accent;
+     v.window_stroke = Stroke::new(1.0, t.field_border);
+-    // glass: popups and floating windows are slightly see-through with a light rim
+-    if !light {
+-        v.window_fill = Color32::from_rgba_unmultiplied(t.panel_bg.r(), t.panel_bg.g(), t.panel_bg.b(), 238);
+-        v.window_stroke = Stroke::new(1.0, Color32::from_white_alpha(22));
+-    }
+-    v.window_corner_radius = egui::CornerRadius::same(14);
+-    v.menu_corner_radius = egui::CornerRadius::same(10);
+-    v.popup_shadow = egui::epaint::Shadow { offset: [0, 10], blur: 32, spread: 0, color: Color32::from_black_alpha(150) };
+-    v.window_shadow = v.popup_shadow;
++    // RNG Glass (docs/RNG_DESIGN.md §5): popovers and floating windows are panes of glass with a
++    // rim; docked panels stay solid.
++    let pal = crate::rng_design::palette(!light);
++    v.window_fill = crate::rng_design::glass_fill(pal, crate::rng_design::Glass::Popover);
++    v.window_stroke = crate::rng_design::rim_stroke(pal);
++    v.selection.bg_fill = if light { pal.accent_tint } else { t.accent };
++    v.selection.stroke = Stroke::new(1.0, if light { pal.accent } else { Color32::WHITE });
++    v.window_corner_radius = crate::rng_design::cr(crate::rng_design::radius::WINDOW);
++    v.menu_corner_radius = crate::rng_design::cr(crate::rng_design::radius::CARD);
++    v.popup_shadow = crate::rng_design::popover_shadow(pal);
++    v.window_shadow = crate::rng_design::dialog_shadow(pal);
+     for w in [&mut v.widgets.noninteractive, &mut v.widgets.inactive, &mut v.widgets.hovered, &mut v.widgets.active, &mut v.widgets.open] {
+         w.corner_radius = egui::CornerRadius::same(t.radius_sm as u8);
+     }
 -- 
 2.56.0
 
