@@ -20,7 +20,9 @@ for (const [id, a] of Object.entries(APPS)) {
     features: c.features.map(f => ({ title: f.title, body: f.body })),
     screenshots: c.shots.map(s => ({ url: `https://www.rng.media${s.src}`, width: s.width, height: s.height, title: s.title, caption: s.body })),
     page: `https://www.rng.media/${id}`,
-    credit: `${a.name} is based on ${a.upstream} by the ArtCraft team, licensed MIT OR Apache-2.0, and modified by RNG Media S.L. RNG Media is not affiliated with or endorsed by the ArtCraft team.`,
+    credit: a.upstream
+      ? `${a.name} is based on ${a.upstream} by the ArtCraft team, licensed MIT OR Apache-2.0, and modified by RNG Media S.L. RNG Media is not affiliated with or endorsed by the ArtCraft team.`
+      : `${a.name} is made by RNG Media S.L. It uses FFmpeg under the LGPL and other open-source components listed in its licences.`,
     licences: `${LICENCES}/${id}`,
   }
 }
