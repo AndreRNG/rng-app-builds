@@ -1,0 +1,66 @@
+# Streameleon is closed source: this public workflow clones the PRIVATE AndreRNG/streameleon with a
+# read-only deploy key (secret STREAMELEON_DEPLOY_KEY). Manual trigger only, so forks/PRs never
+# see the secret; no caches. The source is never committed here.
+# Portable Linux build: Ubuntu 24.04 (glibc 2.39) + an LGPL-only FFmpeg 9.0 bundled in lib/
+# (dynamically linked, rpath $ORIGIN/lib). Output: Streameleon-<ver>-b<run>-linux-x86_64.tar.gz
+name: streameleon
+on:
+  workflow_dispatch:
+permissions:
+  contents: read
+env:
+  FFMPEG_TAG: autobuild-2026-11-16-15-29
+  FFMPEG_NAME: ffmpeg-n9.0.2-57-gd838f9f9ae-linux64-lgpl-shared-9.0
+jobs:
+  build:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          repository: AndreRNG/streameleon
+          ssh-key: ${{ secrets.STREAMELEON_DEPLOY_KEY }}
+          persist-credentials: false
+      - uses: dtolnay/rust-toolchain@39008827e6b4319a349e9a42dfc90579dd25f1ca # stable
+        with:
+          toolchain: stable
+      - name: System packages
+        run: sudo apt-get update && sudo apt-get install -y libpipewire-0.3-dev libclang-dev clang pkg-config imagemagick
+      - name: LGPL FFmpeg (BtbN FFmpeg-Builds, shared, no GPL parts)
+        run: |
+          curl -fsSL -o ff.tar.xz "https://github.com/BtbN/FFmpeg-Builds/releases/download/$FFMPEG_TAG/$FFMPEG_NAME.tar.xz"
+          sha256sum ff.tar.xz
+          tar xf ff.tar.xz && mv "$FFMPEG_NAME" ffmpeg
+          ./ffmpeg/bin/ffmpeg -hide_banner -buildconf | head -40
+          ./ffmpeg/bin/ffmpeg -hide_banner -encoders | grep -E "264|aac" || true
+          ! ./ffmpeg/bin/ffmpeg -hide_banner -buildconf | grep -q -- "--enable-gpl"
+      - name: Build
+        env:
+          FFMPEG_DIR: ${{ github.workspace }}/ffmpeg
+          PKG_CONFIG_PATH: ${{ github.workspace }}/ffmpeg/lib/pkgconfig
+          RUSTFLAGS: "-C link-arg=-Wl,-rpath,$ORIGIN/lib"
+        run: cargo build --release --locked
+      - name: Package
+        run: |
+          v=$(grep -m1 '^version' Cargo.toml | cut -d'"' -f2)
+          stem="Streameleon-$v-b${{ github.run_number }}-linux-x86_64"
+          d=pkg/Streameleon
+          mkdir -p $d/lib $d/licences
+          cp target/release/streameleon $d/
+          cp -a ffmpeg/lib/lib{avcodec,avformat,avutil,swscale,swresample}.so* $d/lib/
+          convert assets/streameleon-icon-1024.png -resize 512x512 $d/icon.png
+          cp THIRD_PARTY.md crates/app/assets/fonts/OFL-Inter.txt $d/licences/
+          cp ffmpeg/LICENSE.txt $d/licences/FFmpeg-LICENSE.txt 2>/dev/null || true
+          cat > $d/licences/FFmpeg-SOURCE.txt <<TXT
+          Streameleon uses FFmpeg (https://ffmpeg.org) under the LGPL v2.1 or later, as separate
+          shared libraries in lib/. You can replace them with your own build of the same major version.
+          Build: $FFMPEG_NAME from https://github.com/BtbN/FFmpeg-Builds (release $FFMPEG_TAG),
+          FFmpeg source: https://git.ffmpeg.org/ffmpeg.git (commit d838f9f9ae).
+          TXT
+          ldd $d/streameleon | grep -E "avcodec|not found" || true
+          tar -C pkg -czf "$stem.tar.gz" Streameleon
+          sha256sum "$stem.tar.gz"
+          echo "STEM=$stem" >> $GITHUB_ENV
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: ${{ env.STEM }}
+          path: ${{ env.STEM }}.tar.gz
