@@ -1,7 +1,7 @@
-From 82c6a0a0022e2c26b42c6af6156cc8e013a70b38 Mon Sep 17 00:00:00 2001
+From 1d4811cfb399ac57417056929478acaadfeb8e04 Mon Sep 17 00:00:00 2001
 From: Andre <andre@rng.media>
 Date: Tue, 17 Nov 2026 12:26:55 +0100
-Subject: [PATCH 1/6] CutCat: RNG Media patches on FilmCraft
+Subject: [PATCH 1/7] CutCat: RNG Media patches on FilmCraft
 
 Branding (name, icon, wordmark, About), glass theme, Premiere-style Home
 on startup, Tabler icons, playhead-anchored zoom, ruler-wheel zoom,
@@ -28346,10 +28346,10 @@ g!-5COB`E#deoBnM@dqF6>_Iv_UHx3vIVCg!09G{HqW}N^
 2.56.0
 
 
-From c6e80cf04ab029000f74eea623c61dad6679d4d4 Mon Sep 17 00:00:00 2001
+From d909c2dd65e352f41c787a797eaacef9938e0d75 Mon Sep 17 00:00:00 2001
 From: Andre <andre@rng.media>
 Date: Tue, 17 Nov 2026 13:31:51 +0100
-Subject: [PATCH 2/6] CutCat: release clean-up (trademarks, app id, phone-home,
+Subject: [PATCH 2/7] CutCat: release clean-up (trademarks, app id, phone-home,
  licences)
 
 Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>
@@ -106848,10 +106848,10 @@ index ce2f392e..c5be5677 100644
                  self.w.text("effectid", format!("filmcraft:{}", serde_json::to_string(other).unwrap_or_default()));
              }
 diff --git a/crates/interchange/src/fcpxml.rs b/crates/interchange/src/fcpxml.rs
-index 7b8acece..e3ad56c3 100644
+index 8d436650..3c38410f 100644
 --- a/crates/interchange/src/fcpxml.rs
 +++ b/crates/interchange/src/fcpxml.rs
-@@ -1198,7 +1198,7 @@ impl Exp<'_, '_> {
+@@ -1230,7 +1230,7 @@ impl Exp<'_, '_> {
                  }
                  s.push_str(&format!("</{tag}>"));
              }
@@ -116722,10 +116722,10 @@ index b083fc42..1c588c0b 100644
 2.56.0
 
 
-From 8dfa3fd2a85806370f458708bc9acb95a77c529c Mon Sep 17 00:00:00 2001
+From 45e184345c6af654d4b930bc675b2aa95d30c8c0 Mon Sep 17 00:00:00 2001
 From: Andre <andre@rng.media>
 Date: Tue, 17 Nov 2026 13:36:04 +0100
-Subject: [PATCH 3/6] CutCat: rename remaining upstream names
+Subject: [PATCH 3/7] CutCat: rename remaining upstream names
 
 Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>
 ---
@@ -117847,10 +117847,10 @@ index 08fd5a75..20eee530 100644
 2.56.0
 
 
-From da0c92332924f747edab96037e1cc6b52cb91ac2 Mon Sep 17 00:00:00 2001
+From 4037c2ab3f1fb7653cc50f23d8b82a5c2320568c Mon Sep 17 00:00:00 2001
 From: Andre <andre@rng.media>
 Date: Tue, 17 Nov 2026 19:12:02 +0100
-Subject: [PATCH 4/6] CutCat: build with speech-to-text and natural voices
+Subject: [PATCH 4/7] CutCat: build with speech-to-text and natural voices
 
 Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>
 ---
@@ -117876,10 +117876,10 @@ index 4ed57db7..fc36bccd 100644
 2.56.0
 
 
-From 0d7ce7cbf9bd0e62203e722a75b243499d4b8bc5 Mon Sep 17 00:00:00 2001
+From 2fcb1c1899701c426056ebdb9f372ecb6157f761 Mon Sep 17 00:00:00 2001
 From: Andre <andre@rng.media>
 Date: Tue, 17 Nov 2026 22:15:26 +0100
-Subject: [PATCH 5/6] =?UTF-8?q?CutCat:=20Connect=20Claude=20(Claude=20link?=
+Subject: [PATCH 5/7] =?UTF-8?q?CutCat:=20Connect=20Claude=20(Claude=20link?=
  =?UTF-8?q?,=20--bridge=20auto,=20Help=20=E2=96=B8=20Connect=20Claude)?=
 MIME-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
@@ -118601,10 +118601,10 @@ index b776933b..b9b26549 100644
 2.56.0
 
 
-From b619fd2c5bc3412e0c59ed4578689de9e7fb53aa Mon Sep 17 00:00:00 2001
+From feb10b5c522db33df23b53ce63e0d6d9cbc3c08a Mon Sep 17 00:00:00 2001
 From: Andre <andre@rng.media>
 Date: Wed, 18 Nov 2026 10:31:10 +0100
-Subject: [PATCH 6/6] CutCat: fix RustSec advisories (zip 9, candle 0.11, rmcp
+Subject: [PATCH 6/7] CutCat: fix RustSec advisories (zip 9, candle 0.11, rmcp
  3.11, rustls-rustcrypto 0.1)
 
 zip 7 -> 9.1 (8 advisories; also via candle 0.9 -> 0.11), rmcp 3.6 -> 3.11,
@@ -120700,6 +120700,492 @@ index 12c759c6..a7b27108 100644
      if let Some(o) = order {
          let mut s = String::new();
          z.by_name(&o).map_err(err)?.take(16).read_to_string(&mut s).map_err(err)?;
+-- 
+2.56.0
+
+
+From d78f3f762f667d2bd4463dfc4c4429387e2666ba Mon Sep 17 00:00:00 2001
+From: Andre <andre@rng.media>
+Date: Wed, 18 Nov 2026 11:09:14 +0100
+Subject: [PATCH 7/7] CutCat: mark exports with neural-voice audio as
+ AI-generated (EU AI Act Art. 50(2))
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+
+When a narration (Text to Speech) clip is heard in the export range, the
+file carries machine-readable marking: MP4/MOV/M4A get a ©cmt comment and
+a top-level XMP uuid box with Iptc4xmpExt:DigitalSourceType =
+compositeWithTrainedAlgorithmicMedia; WAV gets LIST/INFO ICMT + IKEY
+synthetic_audio=1 + _PMX XMP; AIFF ANNO + ID3 chunk; MP3 and ADTS AAC an
+ID3v2.4 tag (COMM, TXXX synthetic_audio=1, PRIV XMP); FLAC Vorbis
+COMMENT + SYNTHETIC_AUDIO=1. Exports without narrations are unchanged.
+
+Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>
+---
+ crates/export/src/aac_out.rs |  22 +++-
+ crates/export/src/ai_mark.rs | 201 +++++++++++++++++++++++++++++++++++
+ crates/export/src/job.rs     |  11 +-
+ crates/export/src/lib.rs     |   1 +
+ crates/export/src/mp3_out.rs |   3 +
+ crates/export/src/run.rs     |  13 ++-
+ crates/export/src/tests.rs   |  67 ++++++++++++
+ 7 files changed, 309 insertions(+), 9 deletions(-)
+ create mode 100644 crates/export/src/ai_mark.rs
+
+diff --git a/crates/export/src/aac_out.rs b/crates/export/src/aac_out.rs
+index 5407a0bf..9de98864 100644
+--- a/crates/export/src/aac_out.rs
++++ b/crates/export/src/aac_out.rs
+@@ -46,9 +46,15 @@ impl Sink {
+         Ok(())
+     }
+ 
+-    fn finish(self, settings: &ExportSettings) -> Result<u64> {
++    fn finish(self, settings: &ExportSettings, marked: bool) -> Result<u64> {
+         match self {
+-            Sink::Mp4 { mux, .. } => mux.finish().map_err(|e| ExportError::Io(e.to_string()))?.finish(settings),
++            Sink::Mp4 { mux, .. } => {
++                let mut w = mux.finish().map_err(|e| ExportError::Io(e.to_string()))?;
++                if marked {
++                    crate::ai_mark::append_mp4(&mut w).map_err(|e| ExportError::Io(e.to_string()))?;
++                }
++                w.finish(settings)
++            }
+             Sink::Adts { out, .. } => out.finish(settings),
+         }
+     }
+@@ -84,6 +90,7 @@ pub(crate) fn export(
+ ) -> Result<(u64, u64)> {
+     let cancelled = || progress.cancel.load(Ordering::Relaxed);
+     let mut a = AudioOut::new(project.clone(), seq, settings, range)?;
++    let marked = crate::ai_mark::contains_generated_audio(project, seq, range);
+     let mut enc: Box<dyn AudioEncoder> = audio_factories()
+         .read()
+         .unwrap_or_else(|e| e.into_inner())
+@@ -104,10 +111,15 @@ pub(crate) fn export(
+         let CodecConfig::Aac(cfg) = &entry.codec else {
+             return Err(ExportError::Encode("AAC: the encoder's sample entry is not AAC".into()));
+         };
+-        Sink::Adts { header: AdtsHeader::from_asc(&cfg.asc)?, out: Out::create(settings)? }
++        let mut out = Out::create(settings)?;
++        if marked {
++            // players and ffmpeg skip / read an ID3v2 tag in front of ADTS frames
++            out.write_all(&crate::ai_mark::id3v2()).map_err(|e| ExportError::Io(e.to_string()))?;
++        }
++        Sink::Adts { header: AdtsHeader::from_asc(&cfg.asc)?, out }
+     } else {
+         let mut opts = WriterOptions::new(Brand::Mp4);
+-        opts.metadata = settings.metadata.udta();
++        opts.metadata = crate::ai_mark::udta(&settings.metadata, marked);
+         let mut mux = Mp4Writer::new(Out::create(settings)?, opts).map_err(|e| ExportError::Io(e.to_string()))?;
+         let mut track = TrackConfig::new(entry, a.sr);
+         track.media_start = Some(i64::from(enc.priming()));
+@@ -124,7 +136,7 @@ pub(crate) fn export(
+         }
+     }
+     sink.write(enc.flush()?)?;
+-    let n = sink.finish(settings)?;
++    let n = sink.finish(settings, marked)?;
+     if settings.part_of_batch {
+         progress.done.store(1, Ordering::Relaxed);
+     }
+diff --git a/crates/export/src/ai_mark.rs b/crates/export/src/ai_mark.rs
+new file mode 100644
+index 00000000..82fe0288
+--- /dev/null
++++ b/crates/export/src/ai_mark.rs
+@@ -0,0 +1,201 @@
++//! Machine-readable marking of exports that contain AI-generated audio (EU AI Act Art. 50(2)).
++//!
++//! A clip whose item is a narration (`Project::narrations`, written by Text to Speech) is speech
++//! made by the neural voices. When such a clip is heard in the export range, the file says so:
++//!
++//! | container | marking |
++//! |---|---|
++//! | MP4 / MOV / M4A | `udta/©cmt` comment, plus a top-level XMP `uuid` box with `Iptc4xmpExt:DigitalSourceType` |
++//! | WAV | `LIST/INFO/ICMT` comment and `IKEY` `synthetic_audio=1`, plus an `_PMX` XMP chunk |
++//! | AIFF | `ANNO` comment, plus an `ID3 ` chunk (comment, `synthetic_audio=1`, XMP) |
++//! | MP3 | ID3v2.4 tag in front: `COMM`, `TXXX:synthetic_audio=1`, `PRIV:XMP` |
++//! | FLAC | Vorbis comments `COMMENT` and `SYNTHETIC_AUDIO=1` (FLAC has no XMP block) |
++//!
++//! Exports without narration clips are unchanged. Speech-to-text and pause removal edit real
++//! recordings, so they do not mark anything.
++
++use std::io::{Seek, SeekFrom, Write};
++
++use filmcraft_project::{ItemId, Project};
++use filmcraft_time::TimeRange;
++
++/// The comment written to marked exports.
++pub const COMMENT: &str = "Contains AI-generated audio (CutCat neural voice)";
++/// IPTC digital source type of a mix of real and AI-generated media.
++pub const DIGITAL_SOURCE_TYPE: &str = "http://cv.iptc.org/newscodes/digitalsourcetype/compositeWithTrainedAlgorithmicMedia";
++/// Plain key / value for containers and readers without XMP.
++pub const KEY: &str = "synthetic_audio";
++
++/// Adobe's XMP `uuid` box type (ISO BMFF).
++const XMP_UUID: [u8; 16] = [0xBE, 0x7A, 0xCF, 0xCB, 0x97, 0xA9, 0x42, 0xE8, 0x9C, 0x71, 0x99, 0x94, 0x91, 0xE3, 0xAF, 0xAC];
++/// Nested sequences deeper than this are not searched (a cycle cannot loop forever).
++const MAX_DEPTH: u32 = 16;
++
++/// Whether an enabled narration clip on an audible track overlaps `range` of `seq`, directly or
++/// inside a nested sequence.
++pub fn contains_generated_audio(project: &Project, seq: ItemId, range: TimeRange) -> bool {
++    !project.narrations.is_empty() && search(project, seq, Some(range), 0)
++}
++
++fn search(project: &Project, seq: ItemId, range: Option<TimeRange>, depth: u32) -> bool {
++    let Some(q) = project.sequence(seq) else { return false };
++    q.video_tracks.iter().chain(&q.audio_tracks).filter(|t| t.enabled && !t.muted).flat_map(|t| &t.items).any(|c| {
++        c.enabled
++            && range.is_none_or(|r| r.overlaps(&c.range()))
++            // a nested sequence is searched whole: marking too much is safe, too little is not
++            && (project.narrations.contains_key(&c.item) || (depth < MAX_DEPTH && c.item != seq && search(project, c.item, None, depth + 1)))
++    })
++}
++
++/// The `udta` items of `meta`, with the AI comment added when `marked`.
++pub fn udta(meta: &crate::ExportMetadata, marked: bool) -> Vec<(String, String)> {
++    if !marked {
++        return meta.udta();
++    }
++    let mut m = meta.clone();
++    m.comment = joined_comment(&m.comment);
++    m.udta()
++}
++
++/// The user's comment followed by the AI comment.
++fn joined_comment(user: &str) -> String {
++    match user.trim() {
++        "" => COMMENT.to_string(),
++        u if u.contains(COMMENT) => u.to_string(),
++        u => format!("{u} | {COMMENT}"),
++    }
++}
++
++/// The XMP packet of a marked export.
++pub fn xmp() -> String {
++    format!(
++        concat!(
++            "<?xpacket begin=\"\u{FEFF}\" id=\"W5M0MpCehiHzreSzNTczkc9d\"?>\n",
++            "<x:xmpmeta xmlns:x=\"adobe:ns:meta/\">\n",
++            " <rdf:RDF xmlns:rdf=\"http://www.w3.org/1999/02/22-rdf-syntax-ns#\">\n",
++            "  <rdf:Description rdf:about=\"\"\n",
++            "    xmlns:Iptc4xmpExt=\"http://iptc.org/std/Iptc4xmpExt/2008-02-29/\"\n",
++            "    xmlns:dc=\"http://purl.org/dc/elements/1.1/\"\n",
++            "    Iptc4xmpExt:DigitalSourceType=\"{dst}\">\n",
++            "   <dc:description><rdf:Alt><rdf:li xml:lang=\"x-default\">{c}</rdf:li></rdf:Alt></dc:description>\n",
++            "  </rdf:Description>\n",
++            " </rdf:RDF>\n",
++            "</x:xmpmeta>\n",
++            "<?xpacket end=\"w\"?>"
++        ),
++        dst = DIGITAL_SOURCE_TYPE,
++        c = COMMENT
++    )
++}
++
++/// A top-level ISO BMFF XMP box (`uuid` BE7ACFCB-…).
++pub fn mp4_xmp_box() -> Vec<u8> {
++    let x = xmp();
++    let mut b = Vec::with_capacity(24 + x.len());
++    b.extend_from_slice(&((24 + x.len()) as u32).to_be_bytes());
++    b.extend_from_slice(b"uuid");
++    b.extend_from_slice(&XMP_UUID);
++    b.extend_from_slice(x.as_bytes());
++    b
++}
++
++/// Append the XMP box at the end of a finished MP4 / MOV (no offsets change).
++pub fn append_mp4<W: Write + Seek>(w: &mut W) -> std::io::Result<()> {
++    w.seek(SeekFrom::End(0))?;
++    w.write_all(&mp4_xmp_box())
++}
++
++/// FLAC Vorbis comments.
++pub fn flac_comments() -> Vec<String> {
++    vec![format!("COMMENT={COMMENT}"), format!("{}=1", KEY.to_uppercase())]
++}
++
++fn id3_frame(id: &[u8; 4], body: &[u8]) -> Vec<u8> {
++    let mut f = id.to_vec();
++    f.extend_from_slice(&syncsafe(body.len()));
++    f.extend_from_slice(&[0, 0]);
++    f.extend_from_slice(body);
++    f
++}
++
++fn syncsafe(n: usize) -> [u8; 4] {
++    let n = n as u32;
++    [(n >> 21 & 0x7F) as u8, (n >> 14 & 0x7F) as u8, (n >> 7 & 0x7F) as u8, (n & 0x7F) as u8]
++}
++
++/// An ID3v2.4 tag: `COMM` (the comment), `TXXX` (`synthetic_audio` = 1) and `PRIV` (`XMP`).
++pub fn id3v2() -> Vec<u8> {
++    // text encoding 3 = UTF-8
++    let mut comm = vec![3];
++    comm.extend_from_slice(b"eng\0");
++    comm.extend_from_slice(COMMENT.as_bytes());
++    let mut txxx = vec![3];
++    txxx.extend_from_slice(KEY.as_bytes());
++    txxx.extend_from_slice(b"\x001");
++    let mut private = b"XMP\0".to_vec();
++    private.extend_from_slice(xmp().as_bytes());
++    let frames: Vec<u8> = [id3_frame(b"COMM", &comm), id3_frame(b"TXXX", &txxx), id3_frame(b"PRIV", &private)].concat();
++    let mut t = b"ID3\x04\x00\x00".to_vec();
++    t.extend_from_slice(&syncsafe(frames.len()));
++    t.extend_from_slice(&frames);
++    t
++}
++
++fn riff_chunk(id: &[u8; 4], body: &[u8]) -> Vec<u8> {
++    let mut c = id.to_vec();
++    c.extend_from_slice(&(body.len() as u32).to_le_bytes());
++    c.extend_from_slice(body);
++    if body.len() % 2 == 1 {
++        c.push(0);
++    }
++    c
++}
++
++fn aiff_chunk(id: &[u8; 4], body: &[u8]) -> Vec<u8> {
++    let mut c = id.to_vec();
++    c.extend_from_slice(&(body.len() as u32).to_be_bytes());
++    c.extend_from_slice(body);
++    if body.len() % 2 == 1 {
++        c.push(0);
++    }
++    c
++}
++
++/// Chunks appended to a WAV after its data chunk.
++pub fn wav_chunks() -> Vec<u8> {
++    let zstr = |s: &str| [s.as_bytes(), b"\0"].concat();
++    let mut info = b"INFO".to_vec();
++    info.extend(riff_chunk(b"ICMT", &zstr(COMMENT)));
++    // no INFO id is meant for it: a key=value in the keywords
++    info.extend(riff_chunk(b"IKEY", &zstr(&format!("{KEY}=1"))));
++    [riff_chunk(b"LIST", &info), riff_chunk(b"_PMX", xmp().as_bytes())].concat()
++}
++
++/// Chunks appended to an AIFF after its sound data.
++pub fn aiff_chunks() -> Vec<u8> {
++    [aiff_chunk(b"ANNO", COMMENT.as_bytes()), aiff_chunk(b"ID3 ", &id3v2())].concat()
++}
++
++/// Append the marking chunks to a finished WAV / AIFF whose header is `head` (header, data, pad
++/// byte already written) and grow the RIFF / RF64 / FORM size to include them.
++pub fn append_pcm<W: Write + Seek>(w: &mut W, head: &[u8]) -> std::io::Result<()> {
++    let aiff = head.starts_with(b"FORM");
++    let extra = if aiff { aiff_chunks() } else { wav_chunks() };
++    let end = w.seek(SeekFrom::End(0))?;
++    w.write_all(&extra)?;
++    let size = end + extra.len() as u64 - 8;
++    let too_big = || std::io::Error::other("the file is too large for its header");
++    if aiff {
++        w.seek(SeekFrom::Start(4))?;
++        w.write_all(&u32::try_from(size).map_err(|_| too_big())?.to_be_bytes())?;
++    } else if head.starts_with(b"RF64") {
++        // RF64 keeps 0xFFFFFFFF at 4 and the RIFF size in ds64
++        w.seek(SeekFrom::Start(20))?;
++        w.write_all(&size.to_le_bytes())?;
++    } else {
++        w.seek(SeekFrom::Start(4))?;
++        w.write_all(&u32::try_from(size).ok().filter(|s| *s != u32::MAX).ok_or_else(too_big)?.to_le_bytes())?;
++    }
++    w.seek(SeekFrom::End(0))?;
++    Ok(())
++}
+diff --git a/crates/export/src/job.rs b/crates/export/src/job.rs
+index 9cd2382d..5bbeafa2 100644
+--- a/crates/export/src/job.rs
++++ b/crates/export/src/job.rs
+@@ -175,6 +175,8 @@ pub struct Exporter {
+     audio: Option<AudioOut>,
+     /// The loudness pass ran (or is not needed).
+     measured: bool,
++    /// The exported audio holds a narration (AI speech): the file is marked ([`crate::ai_mark`]).
++    ai_audio: bool,
+     /// The first pass of a two-pass encode is running.
+     first_pass: bool,
+     /// For the report: the software encoder ran where a hardware one was asked for ([`software_fallback`]).
+@@ -320,6 +322,7 @@ impl Exporter {
+             _ => None,
+         };
+         let measured = !settings.effects.loudness.enabled || audio.is_none();
++        let ai_audio = audio.is_some() && crate::ai_mark::contains_generated_audio(&project, seq, range);
+         Ok(Self {
+             pipe,
+             f0,
+@@ -335,6 +338,7 @@ impl Exporter {
+             aenc,
+             audio,
+             measured,
++            ai_audio,
+             first_pass: two_pass,
+             warnings,
+             queued: Vec::new(),
+@@ -465,7 +469,7 @@ impl Exporter {
+         }
+         let file = Out::create(&self.settings)?;
+         let mut opts = WriterOptions::new(self.brand);
+-        opts.metadata = self.settings.metadata.udta();
++        opts.metadata = crate::ai_mark::udta(&self.settings.metadata, self.ai_audio);
+         let mut mux = Mp4Writer::new(file, opts).map_err(|e| ExportError::Io(e.to_string()))?;
+         let mut vcfg = TrackConfig::new(self.venc.sample_entry(), self.venc.timescale());
+         vcfg.media_start = self.venc.media_start();
+@@ -560,7 +564,10 @@ impl Exporter {
+                 let mux = self.mux.take().ok_or_else(|| ExportError::Encode("internal: the container writer was not created".into()))?;
+                 // Upload services and progressive players need the MP4 metadata before media.
+                 // The muxer relocates data in bounded chunks and adjusts every sample offset.
+-                let w = if self.brand == Brand::Mp4 { mux.finish_faststart() } else { mux.finish() }.map_err(|e| ExportError::Io(e.to_string()))?;
++                let mut w = if self.brand == Brand::Mp4 { mux.finish_faststart() } else { mux.finish() }.map_err(|e| ExportError::Io(e.to_string()))?;
++                if self.ai_audio {
++                    crate::ai_mark::append_mp4(&mut w).map_err(|e| ExportError::Io(e.to_string()))?;
++                }
+                 (w.finish(&self.settings)?, Vec::new())
+             }
+         };
+diff --git a/crates/export/src/lib.rs b/crates/export/src/lib.rs
+index 8e578fc2..2cc01e86 100644
+--- a/crates/export/src/lib.rs
++++ b/crates/export/src/lib.rs
+@@ -16,6 +16,7 @@
+ use std::io::Write;
+ 
+ mod aac_out;
++pub mod ai_mark;
+ mod audio_out;
+ mod job;
+ mod mp3_out;
+diff --git a/crates/export/src/mp3_out.rs b/crates/export/src/mp3_out.rs
+index f5ef753e..cd0ea39a 100644
+--- a/crates/export/src/mp3_out.rs
++++ b/crates/export/src/mp3_out.rs
+@@ -43,6 +43,9 @@ pub(crate) fn export(
+     *progress.loudness.lock().unwrap_or_else(|e| e.into_inner()) = a.loudness;
+     let io = |e: std::io::Error| ExportError::Io(e.to_string());
+     let mut out = Out::create(settings)?;
++    if crate::ai_mark::contains_generated_audio(project, seq, range) {
++        out.write_all(&crate::ai_mark::id3v2()).map_err(io)?;
++    }
+     while let Some(planar) = a.pull(a.out.saturating_add(chunk), sources) {
+         if cancelled() {
+             return Err(ExportError::Cancelled);
+diff --git a/crates/export/src/run.rs b/crates/export/src/run.rs
+index f3fc4c15..7633185f 100644
+--- a/crates/export/src/run.rs
++++ b/crates/export/src/run.rs
+@@ -100,6 +100,7 @@ fn export_here(project: &Arc<Project>, seq: ItemId, settings: &ExportSettings, s
+             let mut a = audio_out::AudioOut::new(project.clone(), seq, settings, range)?;
+             let (ch, sr, fmt) = (a.channels as u16, a.sr, settings.audio.sample_format());
+             let frames = a.remaining();
++            let marked = crate::ai_mark::contains_generated_audio(project, seq, range);
+             // the sizes are known up front: refuse an AIFF that cannot hold them before measuring
+             let mut writer = match settings.format {
+                 Format::Flac => {
+@@ -112,7 +113,10 @@ fn export_here(project: &Arc<Project>, seq: ItemId, settings: &ExportSettings, s
+             };
+             let head = match &writer {
+                 AudioWriter::Pcm(c) => pcm::header(*c, ch, sr, fmt, frames).map_err(ExportError::Unsupported)?,
+-                AudioWriter::Flac(enc) => enc.header(&[]),
++                AudioWriter::Flac(enc) => {
++                    let comments = if marked { crate::ai_mark::flac_comments() } else { Vec::new() };
++                    enc.header(&comments.iter().map(String::as_str).collect::<Vec<_>>())
++                }
+             };
+             // one second per chunk: memory stays flat however long the range is
+             let chunk = i64::from(sr.max(1));
+@@ -145,7 +149,12 @@ fn export_here(project: &Arc<Project>, seq: ItemId, settings: &ExportSettings, s
+                 }
+             }
+             match &mut writer {
+-                AudioWriter::Pcm(_) => out.write_all(pcm::pad(frames, ch, fmt)).map_err(io)?,
++                AudioWriter::Pcm(_) => {
++                    out.write_all(pcm::pad(frames, ch, fmt)).map_err(io)?;
++                    if marked {
++                        crate::ai_mark::append_pcm(&mut out, &head).map_err(io)?;
++                    }
++                }
+                 AudioWriter::Flac(enc) => {
+                     out.write_all(&enc.finish()).map_err(io)?;
+                     // the frame sizes and MD5 are known now: fill them into STREAMINFO
+diff --git a/crates/export/src/tests.rs b/crates/export/src/tests.rs
+index f1d7349a..03c663dc 100644
+--- a/crates/export/src/tests.rs
++++ b/crates/export/src/tests.rs
+@@ -773,3 +773,70 @@ mod apv_chroma {
+         }
+     }
+ }
++
++/// The test project with its tone item marked as a Text to Speech narration.
++fn narrated() -> (Arc<Project>, ItemId, SourceMap) {
++    let (p, seq, m) = project();
++    let mut p = Arc::unwrap_or_clone(p);
++    let tone = p.sequence(seq).unwrap().audio_tracks[0].items[0].item;
++    let n = filmcraft_project::Narration {
++        text: "Hello".into(),
++        language: "en-US".into(),
++        voice: "af_heart".into(),
++        pitch: Default::default(),
++        pace: 1.0,
++        speech_duration: Tick::ZERO,
++    };
++    p.narrations.insert(tone, n);
++    (Arc::new(p), seq, m)
++}
++
++fn find(hay: &[u8], needle: &[u8]) -> Option<usize> {
++    hay.windows(needle.len()).position(|w| w == needle)
++}
++
++#[test]
++fn narration_clips_are_found_in_the_export_range_only() {
++    let all = TimeRange::new(Tick::ZERO, FrameRate::FPS_24.tick_of(24));
++    let (p, seq, _) = project();
++    assert!(!ai_mark::contains_generated_audio(&p, seq, all));
++    let (p, seq, _) = narrated();
++    assert!(ai_mark::contains_generated_audio(&p, seq, all));
++    assert!(!ai_mark::contains_generated_audio(&p, seq, TimeRange::new(FrameRate::FPS_24.tick_of(48), FrameRate::FPS_24.tick_of(24))));
++    let mut q = Arc::unwrap_or_clone(p);
++    q.sequence_mut(seq).unwrap().audio_tracks[0].muted = true;
++    assert!(!ai_mark::contains_generated_audio(&q, seq, all));
++}
++
++#[test]
++fn exports_with_tts_audio_are_marked_and_others_are_not() {
++    let (plain, seq, m) = project();
++    let (tts, _, _) = narrated();
++    for (fmt, name) in [(Format::Mjpeg, "ai.mov"), (Format::Wav, "ai.wav"), (Format::Aiff, "ai.aiff"), (Format::Mp3, "ai.mp3"), (Format::Flac, "ai.flac")] {
++        for (p, marked) in [(&plain, false), (&tts, true)] {
++            let path = tmp(&format!("{marked}-{name}"));
++            let s = ExportSettings { format: fmt, path: path.clone(), ..Default::default() };
++            export(p, seq, &s, &m, &Progress::default()).unwrap();
++            let b = std::fs::read(&path).unwrap();
++            assert_eq!(find(&b, ai_mark::COMMENT.as_bytes()).is_some(), marked, "{fmt:?}");
++            let has_xmp = find(&b, b"compositeWithTrainedAlgorithmicMedia").is_some();
++            assert_eq!(has_xmp, marked && fmt != Format::Flac, "{fmt:?}");
++            match fmt {
++                Format::Wav => assert_eq!(u32::from_le_bytes(b[4..8].try_into().unwrap()) as usize, b.len() - 8),
++                Format::Aiff => assert_eq!(u32::from_be_bytes(b[4..8].try_into().unwrap()) as usize, b.len() - 8),
++                Format::Mp3 => assert_eq!(b.starts_with(b"ID3"), marked),
++                Format::Flac => assert_eq!(find(&b, b"SYNTHETIC_AUDIO=1").is_some(), marked),
++                _ => assert_eq!(find(&b, b"uuid\xBE\x7A\xCF\xCB").is_some(), marked),
++            }
++            if let Some(ffprobe) = filmcraft_testkit::ffprobe_or_skip("ai marking") {
++                let out = std::process::Command::new(ffprobe)
++                    .args(["-v", "error", "-show_entries", "format_tags=comment", "-of", "default=nw=1:nk=1", &path])
++                    .output()
++                    .unwrap();
++                assert!(out.status.success(), "{fmt:?}: {}", String::from_utf8_lossy(&out.stderr));
++                let comment = String::from_utf8_lossy(&out.stdout);
++                assert_eq!(comment.contains(ai_mark::COMMENT), marked, "{fmt:?}: {comment}");
++            }
++        }
++    }
++}
 -- 
 2.56.0
 
