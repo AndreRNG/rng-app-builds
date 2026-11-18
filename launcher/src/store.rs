@@ -447,7 +447,7 @@ pub fn extract(archive: &Path, dest: &Path) -> Result<()> {
             #[cfg(unix)]
             if let Some(mode) = entry.unix_mode() {
                 use std::os::unix::fs::PermissionsExt;
-                let _ = fs::set_permissions(&out, fs::Permissions::from_mode(mode & 0o7777));
+                let _ = fs::set_permissions(&out, fs::Permissions::from_mode(mode & 0o777));
             }
         }
         Ok(())
@@ -854,6 +854,30 @@ mod sig_tests {
 
 #[cfg(all(test, target_os = "linux"))]
 mod tests {
+    use std::os::unix::fs::PermissionsExt;
+
+    #[test]
+    fn zip_drops_setuid_and_keeps_symlinks() {
+        let dir = std::env::temp_dir().join(format!("rng-studio-zip-{}", std::process::id()));
+        let _ = std::fs::remove_dir_all(&dir);
+        std::fs::create_dir_all(&dir).unwrap();
+        let zpath = dir.join("t.zip");
+        {
+            let mut w = zip::ZipWriter::new(std::fs::File::create(&zpath).unwrap());
+            let o = zip::write::SimpleFileOptions::default().compression_method(zip::CompressionMethod::Deflated).unix_permissions(0o4755);
+            w.start_file("app/run", o).unwrap();
+            std::io::Write::write_all(&mut w, b"#!/bin/sh\n").unwrap();
+            w.add_symlink("app/link", "run", zip::write::SimpleFileOptions::default()).unwrap();
+            w.finish().unwrap();
+        }
+        let out = dir.join("x");
+        super::extract(&zpath, &out).unwrap();
+        let mode = std::fs::metadata(out.join("app/run")).unwrap().permissions().mode() & 0o7777;
+        assert_eq!(mode, 0o755);
+        assert_eq!(std::fs::read_link(out.join("app/link")).unwrap().to_str(), Some("run"));
+        let _ = std::fs::remove_dir_all(dir);
+    }
+
     #[test]
     fn opens_a_desktop_entry() {
         let dir = std::env::temp_dir().join(format!("rng-studio-test-{}", std::process::id()));

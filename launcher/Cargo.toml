@@ -19,7 +19,7 @@ ed25519-dalek = { version = "2", default-features = false, features = ["std"] }
 dirs = "6"
 flate2 = "1"
 tar = "0.4"
-zip = { version = "2", default-features = false, features = ["deflate"] }
+zip = { version = "9", default-features = false, features = ["deflate"] }
 self-replace = "1"
 
 [target.'cfg(windows)'.dependencies]
