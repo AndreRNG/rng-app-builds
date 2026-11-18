@@ -1,7 +1,7 @@
 From 1d4811cfb399ac57417056929478acaadfeb8e04 Mon Sep 17 00:00:00 2001
 From: Andre <andre@rng.media>
 Date: Tue, 17 Nov 2026 12:26:55 +0100
-Subject: [PATCH 1/8] CutCat: RNG Media patches on FilmCraft
+Subject: [PATCH 1/9] CutCat: RNG Media patches on FilmCraft
 
 Branding (name, icon, wordmark, About), glass theme, Premiere-style Home
 on startup, Tabler icons, playhead-anchored zoom, ruler-wheel zoom,
@@ -28349,7 +28349,7 @@ g!-5COB`E#deoBnM@dqF6>_Iv_UHx3vIVCg!09G{HqW}N^
 From d909c2dd65e352f41c787a797eaacef9938e0d75 Mon Sep 17 00:00:00 2001
 From: Andre <andre@rng.media>
 Date: Tue, 17 Nov 2026 13:31:51 +0100
-Subject: [PATCH 2/8] CutCat: release clean-up (trademarks, app id, phone-home,
+Subject: [PATCH 2/9] CutCat: release clean-up (trademarks, app id, phone-home,
  licences)
 
 Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>
@@ -116725,7 +116725,7 @@ index b083fc42..1c588c0b 100644
 From 45e184345c6af654d4b930bc675b2aa95d30c8c0 Mon Sep 17 00:00:00 2001
 From: Andre <andre@rng.media>
 Date: Tue, 17 Nov 2026 13:36:04 +0100
-Subject: [PATCH 3/8] CutCat: rename remaining upstream names
+Subject: [PATCH 3/9] CutCat: rename remaining upstream names
 
 Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>
 ---
@@ -117850,7 +117850,7 @@ index 08fd5a75..20eee530 100644
 From 4037c2ab3f1fb7653cc50f23d8b82a5c2320568c Mon Sep 17 00:00:00 2001
 From: Andre <andre@rng.media>
 Date: Tue, 17 Nov 2026 19:12:02 +0100
-Subject: [PATCH 4/8] CutCat: build with speech-to-text and natural voices
+Subject: [PATCH 4/9] CutCat: build with speech-to-text and natural voices
 
 Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>
 ---
@@ -117879,7 +117879,7 @@ index 4ed57db7..fc36bccd 100644
 From 2fcb1c1899701c426056ebdb9f372ecb6157f761 Mon Sep 17 00:00:00 2001
 From: Andre <andre@rng.media>
 Date: Tue, 17 Nov 2026 22:15:26 +0100
-Subject: [PATCH 5/8] =?UTF-8?q?CutCat:=20Connect=20Claude=20(Claude=20link?=
+Subject: [PATCH 5/9] =?UTF-8?q?CutCat:=20Connect=20Claude=20(Claude=20link?=
  =?UTF-8?q?,=20--bridge=20auto,=20Help=20=E2=96=B8=20Connect=20Claude)?=
 MIME-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
@@ -118604,7 +118604,7 @@ index b776933b..b9b26549 100644
 From feb10b5c522db33df23b53ce63e0d6d9cbc3c08a Mon Sep 17 00:00:00 2001
 From: Andre <andre@rng.media>
 Date: Wed, 18 Nov 2026 10:31:10 +0100
-Subject: [PATCH 6/8] CutCat: fix RustSec advisories (zip 9, candle 0.11, rmcp
+Subject: [PATCH 6/9] CutCat: fix RustSec advisories (zip 9, candle 0.11, rmcp
  3.11, rustls-rustcrypto 0.1)
 
 zip 7 -> 9.1 (8 advisories; also via candle 0.9 -> 0.11), rmcp 3.6 -> 3.11,
@@ -120707,7 +120707,7 @@ index 12c759c6..a7b27108 100644
 From d78f3f762f667d2bd4463dfc4c4429387e2666ba Mon Sep 17 00:00:00 2001
 From: Andre <andre@rng.media>
 Date: Wed, 18 Nov 2026 11:09:14 +0100
-Subject: [PATCH 7/8] CutCat: mark exports with neural-voice audio as
+Subject: [PATCH 7/9] CutCat: mark exports with neural-voice audio as
  AI-generated (EU AI Act Art. 50(2))
 MIME-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
@@ -121193,7 +121193,7 @@ index f1d7349a..03c663dc 100644
 From 7d72dced3bef00f6729bd8af95099958859abc8d Mon Sep 17 00:00:00 2001
 From: Andre <andre@rng.media>
 Date: Tue, 17 Nov 2026 22:56:41 +0100
-Subject: [PATCH 8/8] =?UTF-8?q?CutCat:=20RNG=20Design=20pass=20=E2=80=94?=
+Subject: [PATCH 8/9] =?UTF-8?q?CutCat:=20RNG=20Design=20pass=20=E2=80=94?=
  =?UTF-8?q?=20glass=20panes,=20warm=20palette,=20new=20Home,=20real=20ligh?=
  =?UTF-8?q?t=20theme?=
 MIME-Version: 1.0
@@ -122262,6 +122262,39 @@ index 08279b70..a54478c2 100644
      for w in [&mut v.widgets.noninteractive, &mut v.widgets.inactive, &mut v.widgets.hovered, &mut v.widgets.active, &mut v.widgets.open] {
          w.corner_radius = egui::CornerRadius::same(t.radius_sm as u8);
      }
+-- 
+2.56.0
+
+
+From 1d1c102745d40c36a16d160b7210daab0e0cd1ba Mon Sep 17 00:00:00 2001
+From: Andre <andre@rng.media>
+Date: Wed, 18 Nov 2026 11:55:44 +0100
+Subject: [PATCH 9/9] CutCat: theme test follows the RNG Design palette
+
+---
+ crates/ui-egui/src/theme.rs | 9 +++++----
+ 1 file changed, 5 insertions(+), 4 deletions(-)
+
+diff --git a/crates/ui-egui/src/theme.rs b/crates/ui-egui/src/theme.rs
+index a54478c2..9ab13de4 100644
+--- a/crates/ui-egui/src/theme.rs
++++ b/crates/ui-egui/src/theme.rs
+@@ -586,10 +586,11 @@ mod tests {
+         for kind in [ThemeKind::Dark, ThemeKind::Medium] {
+             let t = Tokens::for_kind(kind);
+             // Existing painted colors, recorded independently of the Light palette.
+-            assert_eq!(t.pill_active_bg, Color32::from_rgb(0x34, 0x34, 0x3b));
+-            assert_eq!(t.clip_bar_bg, Color32::from_rgb(58, 58, 70));
+-            assert_eq!(t.control_surface, Color32::from_rgb(0x1d, 0x1d, 0x21));
+-            assert_eq!(t.control_well, Color32::from_rgb(0x0c, 0x0c, 0x0f));
++            // RNG Design (rng_design::DARK) values for the surfaces the palette took over.
++            assert_eq!(t.pill_active_bg, crate::rng_design::DARK.pressed);
++            assert_eq!(t.clip_bar_bg, Color32::from_rgb(0x4a, 0x45, 0x42));
++            assert_eq!(t.control_surface, crate::rng_design::DARK.raised);
++            assert_eq!(t.control_well, crate::rng_design::DARK.canvas);
+             assert_eq!(t.control_handle, Color32::from_gray(0xe0));
+             assert_eq!(t.meter_bg, Color32::BLACK);
+             assert_eq!(t.plot_bg, Color32::from_gray(0x18));
 -- 
 2.56.0
 
