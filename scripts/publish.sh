@@ -116,6 +116,15 @@ for a in m["apps"]:
     # Renamed apps: their former ids, so RNG Studio carries existing installs over.
     if apps.get(a["id"], {}).get("replaces"):
         a["replaces"] = apps[a["id"]]["replaces"]
+# Mac: hidden until the builds are Developer ID signed + notarized (scripts/macos-sign.sh with the
+# Apple secrets). RNG Studio on a Mac then lists every app as "Coming soon". Set MAC_LIVE=1 here
+# once signed Mac builds are published.
+MAC_LIVE = False
+if not MAC_LIVE:
+    for a in m["apps"] + ([m["launcher"]] if m.get("launcher") else []):
+        for k in ("platforms", "installers"):
+            for p in [p for p in a.get(k, {}) if p.startswith("macos")]:
+                del a[k][p]
 # Entries under a former id are gone once the renamed app is published.
 former = {r["id"] for a in m["apps"] for r in a.get("replaces", [])}
 m["apps"] = [a for a in m["apps"] if a["id"] not in former]
